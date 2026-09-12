@@ -1,7 +1,17 @@
+# Python virtual environments
 venv/
+.venv/
+.venv-clean/
+
+# Python cache
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Environment variables
 .env
+.env.*
 
 # User uploaded files
 storage/pdfs/
@@ -18,3 +28,6 @@ metadata/
 *.db
 *.sqlite
 *.sqlite3
+
+# Project documentation / local files
+PROJECT_STRUCTURE.txt
