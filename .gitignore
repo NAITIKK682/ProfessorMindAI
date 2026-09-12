@@ -16,3 +16,5 @@ metadata/
 
 # Local database
 *.db
+*.sqlite
+*.sqlite3
