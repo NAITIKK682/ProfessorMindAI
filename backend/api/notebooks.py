@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from typing import Optional
 
 import uuid
 import shutil
@@ -29,7 +30,7 @@ NOTEBOOKS_DIR = Path("storage/notebooks")
 
 class NotebookCreate(BaseModel):
     name: str
-    description: str | None = None
+    description: Optional[str] = None
 
 
 # ==================================================

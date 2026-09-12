@@ -319,7 +319,12 @@ No backend environment variables are read. `frontend/.env.example` is empty. A l
 From the repository root with the virtual environment active:
 
 ```powershell
-uvicorn backend.main:app --reload
+PID:        11168
+Process:    python.exe
+Python:     C:\Python312\python.exe
+Command:    python -m uvicorn backend.main:app --host 127.0.0.1 --port 8001
+Started:    10:45:24 PM
+Port:       8001
 ```
 
 The default local address is `http://127.0.0.1:8000`. FastAPI documentation is available at `http://127.0.0.1:8000/docs`.

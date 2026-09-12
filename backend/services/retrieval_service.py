@@ -1,5 +1,6 @@
-from backend.services.embedding_service import model
+from typing import List, Dict, Any
 
+from backend.services.embedding_service import generate_embeddings
 from backend.services.vector_store import (
     load_notebook_faiss,
     search_faiss
@@ -7,11 +8,18 @@ from backend.services.vector_store import (
 
 
 def retrieve_chunks(
-    query,
-    notebook_id,
-    top_k=8,
-    distance_threshold=1.2
-):
+    query: str,
+    notebook_id: str,
+    top_k: int = 8,
+    distance_threshold: float = 1.2
+) -> List[Dict[str, Any]]:
+
+    # ------------------------------------------
+    # Validate query
+    # ------------------------------------------
+    
+    if not query or not query.strip():
+        return []
 
     # ------------------------------------------
     # Load notebook-specific FAISS
@@ -32,9 +40,10 @@ def retrieve_chunks(
     # Create query embedding
     # ------------------------------------------
 
-    query_embedding = model.encode(
-        [query],
-        convert_to_numpy=True
+    # Use the centralized generate_embeddings function 
+    # to ensure model availability checks and proper formatting
+    query_embedding = generate_embeddings(
+        [query]
     )
 
     # ------------------------------------------

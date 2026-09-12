@@ -1,55 +1,104 @@
-def build_context(results):
+from typing import List, Dict, Any
+
+
+def build_context(results: List[Dict[str, Any]]) -> str:
+    """
+    Builds a formatted context string from retrieved chunks for the LLM.
+    Removes exact duplicates and sorts chunks by page number and chunk index.
+    
+    Handles both dictionary and string inputs defensively to prevent
+    'string indices must be integers' errors.
+    """
 
     if not results:
         return ""
 
-    # Remove exact duplicate chunks
-    unique_chunks = {}
+    # --------------------------------------------------
+    # 1. Normalize & deduplicate chunks
+    # --------------------------------------------------
+
+    unique_chunks: Dict[tuple, Dict[str, Any]] = {}
 
     for result in results:
 
-        key = (
-            result["page_number"],
-            result["text"].strip()
-        )
+        # Defensive: ensure result is a dictionary
+        if isinstance(result, str):
+            result = {"text": result, "page_number": 0, "chunk_index": 0}
+        elif not isinstance(result, dict):
+            result = {"text": str(result), "page_number": 0, "chunk_index": 0}
 
-        unique_chunks[key] = result
+        # Safely extract text and metadata
+        text = str(result.get("text", "")).strip()
+        page_number = result.get("page_number", 0) or 0
+        filename = result.get("filename", result.get("file_id", "Unknown"))
 
-    results = list(unique_chunks.values())
+        # Skip empty text chunks
+        if not text:
+            continue
+
+        # Deduplication key: same page + same text = duplicate
+        key = (page_number, text)
+
+        if key not in unique_chunks:
+            unique_chunks[key] = {
+                "text": text,
+                "page_number": page_number,
+                "chunk_index": result.get("chunk_index", 0) or 0,
+                "filename": filename,
+                "file_id": result.get("file_id"),
+                "distance": result.get("distance"),
+            }
+
+    normalized = list(unique_chunks.values())
+
+    if not normalized:
+        return ""
 
     # --------------------------------------------------
-    # Sort by original PDF order
+    # 2. Sort by original PDF order
     # --------------------------------------------------
-    #
     # First: page number
     # Second: original chunk position
-    #
-    results.sort(
+
+    normalized.sort(
         key=lambda x: (
-            x["page_number"],
+            x.get("page_number", 0),
             x.get("chunk_index", 0)
         )
     )
 
-    context_parts = []
+    # --------------------------------------------------
+    # 3. Build formatted context string
+    # --------------------------------------------------
 
-    current_page = None
+    context_parts: List[str] = []
+    current_page: int | None = None
+    current_file: str | None = None
 
-    for result in results:
+    for chunk in normalized:
 
-        page_number = result["page_number"]
+        page_number = chunk.get("page_number", 0)
+        text = chunk.get("text", "").strip()
+        filename = chunk.get("filename", "Unknown")
 
-        # New page
-        if page_number != current_page:
+        if not text:
+            continue
 
+        # Add file header when source document changes
+        if filename != current_file:
             context_parts.append(
-                f"\n========== PAGE {page_number} ==========\n"
+                f"\n[Document: {filename}]"
             )
+            current_file = filename
+            current_page = None  # Reset page tracking for new document
 
+        # Add page separator when page changes
+        if page_number != current_page:
+            context_parts.append(
+                f"--- Page {page_number} ---"
+            )
             current_page = page_number
 
-        context_parts.append(
-            result["text"].strip()
-        )
+        context_parts.append(text)
 
     return "\n".join(context_parts)

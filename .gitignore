@@ -31,3 +31,8 @@ metadata/
 
 # Project documentation / local files
 PROJECT_STRUCTURE.txt
+# Node / React / Vite
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/.vite/

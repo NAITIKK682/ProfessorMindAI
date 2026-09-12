@@ -1,27 +1,32 @@
-import fitz
+import pymupdf
 from pathlib import Path
+from typing import List, Dict, Any
 
 
-def extract_text_from_pdf(file_path: str):
+def extract_text_from_pdf(file_path: str) -> List[Dict[str, Any]]:
 
     pdf_path = Path(file_path)
 
     if not pdf_path.exists():
         raise FileNotFoundError("PDF file not found.")
 
-    document = fitz.open(pdf_path)
-
     pages = []
 
-    for page_number, page in enumerate(document, start=1):
+    try:
+        # Use context manager to ensure the document is properly closed
+        # and use the modern pymupdf import to resolve the deprecation warning
+        with pymupdf.open(pdf_path) as document:
 
-        text = page.get_text("text")
+            for page_number, page in enumerate(document, start=1):
 
-        pages.append({
-            "page_number": page_number,
-            "text": text.strip()
-        })
+                text = page.get_text("text")
 
-    document.close()
+                pages.append({
+                    "page_number": page_number,
+                    "text": text.strip()
+                })
+
+    except Exception as e:
+        raise RuntimeError(f"Failed to extract text from PDF: {str(e)}") from e
 
     return pages

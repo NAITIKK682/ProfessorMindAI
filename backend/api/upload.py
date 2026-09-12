@@ -2,6 +2,7 @@ from fastapi import APIRouter, UploadFile, File, HTTPException
 from pathlib import Path
 import shutil
 import uuid
+from typing import Any, Dict
 
 from backend.services.pdf_extractor import extract_text_from_pdf
 from backend.services.text_chunker import chunk_text
@@ -20,13 +21,20 @@ router = APIRouter()
 async def upload_pdf(
     notebook_id: str,
     file: UploadFile = File(...)
-):
+) -> Dict[str, Any]:
 
     # -----------------------------
     # 1. Validate PDF
     # -----------------------------
 
-    if file.content_type != "application/pdf":
+    # Check content type or fallback to file extension to prevent 
+    # false rejections when clients omit the content-type header
+    is_pdf = (
+        file.content_type == "application/pdf" 
+        or (file.filename and file.filename.lower().endswith(".pdf"))
+    )
+
+    if not is_pdf:
 
         raise HTTPException(
             status_code=400,
@@ -81,6 +89,9 @@ async def upload_pdf(
 
         file_id = str(uuid.uuid4())
 
+        # Safely handle filename in case it is None
+        original_filename = file.filename or "unknown.pdf"
+        
         stored_filename = f"{file_id}.pdf"
 
         file_path = (
@@ -109,7 +120,7 @@ async def upload_pdf(
         document = Document(
             file_id=file_id,
             notebook_id=notebook_id,
-            filename=file.filename,
+            filename=original_filename,
             stored_as=stored_filename,
             status="processing"
         )
@@ -181,9 +192,14 @@ async def upload_pdf(
 
             document.total_chunks = len(chunks)
 
-            document.embedding_dimension = (
-                embeddings.shape[1]
+            # Safely extract embedding dimension regardless of array type
+            embedding_dim = (
+                embeddings.shape[1] 
+                if hasattr(embeddings, "shape") 
+                else len(embeddings[0]) if embeddings else 0
             )
+            
+            document.embedding_dimension = embedding_dim
 
             document.status = "completed"
 
@@ -200,11 +216,11 @@ async def upload_pdf(
                 "notebook_id": notebook_id,
                 "notebook_name": notebook.name,
                 "file_id": file_id,
-                "filename": file.filename,
+                "filename": original_filename,
                 "stored_as": stored_filename,
                 "total_pages": len(pages),
                 "total_chunks": len(chunks),
-                "embedding_dimension": embeddings.shape[1],
+                "embedding_dimension": embedding_dim,
                 "faiss_vectors": index.ntotal,
                 "notebook_chunks": len(all_chunks),
                 "status": "completed"
