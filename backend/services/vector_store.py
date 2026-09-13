@@ -176,6 +176,12 @@ def add_to_notebook_faiss(
             embeddings.shape[1]
         )
 
+    if index.ntotal != len(existing_chunks):
+        raise ValueError(
+            "FAISS index and metadata are out of alignment. "
+            "Re-index this notebook before uploading more documents."
+        )
+
     # ---------------------------------
     # Add vectors
     # ---------------------------------
@@ -227,9 +233,13 @@ def search_faiss(
             -1
         )
 
+    if index is None or not chunks or top_k <= 0:
+        return []
+
     actual_k = min(
-        top_k,
-        index.ntotal
+        int(top_k),
+        index.ntotal,
+        len(chunks)
     )
 
     if actual_k == 0:
@@ -241,16 +251,17 @@ def search_faiss(
     )
 
     results = []
+    seen_chunks = set()
 
     for distance, index_position in zip(
         distances[0],
         indices[0]
     ):
 
-        if index_position == -1:
+        if index_position < 0:
             continue
 
-        if distance > distance_threshold:
+        if not np.isfinite(distance) or distance > distance_threshold:
             continue
 
         if index_position >= len(chunks):
@@ -282,6 +293,25 @@ def search_faiss(
                 "page_chunk_index": None
             }
 
+        text = str(chunk_data.get("text", "")).strip()
+        if not text:
+            continue
+
+        document_key = (
+            chunk_data.get("file_id")
+            or chunk_data.get("filename")
+            or "unknown"
+        )
+        chunk_key = (
+            document_key,
+            chunk_data.get("page_number"),
+            chunk_data.get("chunk_index", index_position),
+            text
+        )
+        if chunk_key in seen_chunks:
+            continue
+        seen_chunks.add(chunk_key)
+
         # ---------------------------------
         # Return complete source metadata
         # ---------------------------------
@@ -310,14 +340,12 @@ def search_faiss(
                 "page_chunk_index"
             ),
 
-            "text": chunk_data.get(
-                "text",
-                ""
-            ),
+            "text": text,
 
             "distance": float(
                 distance
             )
         })
 
+    results.sort(key=lambda result: result["distance"])
     return results

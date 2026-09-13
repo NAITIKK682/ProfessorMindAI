@@ -159,9 +159,10 @@ def build_context(
 
     normalized.sort(
         key=lambda x: (
-            x.get("filename", ""),
-            x.get("page_number", 0),
-            x.get("chunk_index", 0)
+            x.get("file_id") or x.get("filename", "Unknown Document"),
+            x.get("page_number") or 0,
+            x.get("chunk_index") or 0,
+            x.get("page_chunk_index") or 0
         )
     )
 
@@ -171,7 +172,7 @@ def build_context(
 
     context_parts: List[str] = []
 
-    current_file = None
+    current_document = None
     current_page = None
 
     for chunk in normalized:
@@ -183,11 +184,6 @@ def build_context(
 
         page_number = chunk.get(
             "page_number",
-            0
-        )
-
-        chunk_index = chunk.get(
-            "chunk_index",
             0
         )
 
@@ -203,29 +199,19 @@ def build_context(
         # New document
         # ---------------------------------
 
-        if filename != current_file:
+        document_key = (
+            chunk.get("file_id")
+            or filename
+            or "Unknown Document"
+        )
+
+        if document_key != current_document:
 
             if context_parts:
                 context_parts.append("")
 
-            context_parts.append(
-                "=== DOCUMENT ==="
-            )
-
-            context_parts.append(
-                f"Document: {filename}"
-            )
-
-            context_parts.append(
-                "The following text was retrieved "
-                "from this document."
-            )
-
-            context_parts.append(
-                "================"
-            )
-
-            current_file = filename
+            context_parts.append(f"[DOCUMENT: {filename}]")
+            current_document = document_key
             current_page = None
 
         # ---------------------------------
@@ -237,7 +223,7 @@ def build_context(
             context_parts.append("")
 
             context_parts.append(
-                f"--- Retrieved Page {page_number} ---"
+                f"[PAGE: {page_number}]"
             )
 
             current_page = page_number
@@ -245,10 +231,6 @@ def build_context(
         # ---------------------------------
         # Chunk marker
         # ---------------------------------
-
-        context_parts.append(
-            f"[Retrieved Chunk {chunk_index}]"
-        )
 
         # ---------------------------------
         # Actual lecture text

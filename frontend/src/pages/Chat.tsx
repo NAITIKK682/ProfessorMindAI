@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import type { FormEvent, KeyboardEvent } from 'react';
+import type { FormEvent, KeyboardEvent, ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   Bot,
@@ -7,7 +7,6 @@ import {
   User,
   Notebook,
   BookOpen,
-  FileText,
   Loader2,
   X,
 } from 'lucide-react';
@@ -16,6 +15,7 @@ import { askQuestion } from '../services/questionService';
 import { getApiError } from '../services/api';
 import type { QuestionResponse } from '../types/chat';
 import EmptyState from '../components/common/EmptyState';
+import SourceReferences from '../components/chat/SourceReferences';
 
 function Chat() {
   const [params] = useSearchParams();
@@ -166,11 +166,46 @@ function Chat() {
 
     const cleanedText = text
       .replace(/\\n/g, '\n')
-      .replace(/\r\n/g, '\n');
+      .replace(/\r\n/g, '\n')
+      .replace(/^\\(#{1,6}\s)/gm, '$1')
+      .replace(/^\\(```)/gm, '$1')
+      .replace(/^\s*svg\s*$\n?/gim, '');
 
     const lines = cleanedText.split('\n');
+    let inCodeBlock = false;
+    let codeLines: string[] = [];
+    const renderedLines: ReactNode[] = [];
 
-    return lines.map((line, index) => {
+    const flushCodeBlock = (key: string) => {
+      if (codeLines.length === 0) {
+        return;
+      }
+
+      renderedLines.push(
+        <pre
+          key={key}
+          className="overflow-x-auto rounded-lg bg-slate-900 px-4 py-3 mb-3 text-xs text-slate-100"
+        >
+          <code>{codeLines.join('\n')}</code>
+        </pre>
+      );
+      codeLines = [];
+    };
+
+    lines.forEach((line, index) => {
+      if (line.trim().startsWith('```')) {
+        if (inCodeBlock) {
+          flushCodeBlock(`code-${index}`);
+        }
+        inCodeBlock = !inCodeBlock;
+        return;
+      }
+
+      if (inCodeBlock) {
+        codeLines.push(line);
+        return;
+      }
+
       const trimmedLine = line.trim();
 
       // --------------------------------------------------
@@ -178,12 +213,13 @@ function Chat() {
       // --------------------------------------------------
 
       if (trimmedLine === '') {
-        return (
+        renderedLines.push(
           <div
             key={`empty-${index}`}
             className="h-2"
           />
         );
+        return;
       }
 
       // --------------------------------------------------
@@ -191,7 +227,7 @@ function Chat() {
       // --------------------------------------------------
 
       if (trimmedLine.startsWith('### ')) {
-        return (
+        renderedLines.push(
           <h3
             key={index}
             className="text-base font-bold text-slate-900 mt-4 mb-2"
@@ -201,6 +237,7 @@ function Chat() {
             )}
           </h3>
         );
+        return;
       }
 
       // --------------------------------------------------
@@ -208,7 +245,7 @@ function Chat() {
       // --------------------------------------------------
 
       if (trimmedLine.startsWith('## ')) {
-        return (
+        renderedLines.push(
           <h2
             key={index}
             className="text-lg font-bold text-slate-900 mt-5 mb-3"
@@ -218,6 +255,7 @@ function Chat() {
             )}
           </h2>
         );
+        return;
       }
 
       // --------------------------------------------------
@@ -225,7 +263,7 @@ function Chat() {
       // --------------------------------------------------
 
       if (trimmedLine.startsWith('# ')) {
-        return (
+        renderedLines.push(
           <h1
             key={index}
             className="text-xl font-bold text-slate-900 mt-5 mb-3"
@@ -235,6 +273,7 @@ function Chat() {
             )}
           </h1>
         );
+        return;
       }
 
       // --------------------------------------------------
@@ -245,7 +284,7 @@ function Chat() {
         trimmedLine.startsWith('- ') ||
         trimmedLine.startsWith('* ')
       ) {
-        return (
+        renderedLines.push(
           <div
             key={index}
             className="flex gap-2 text-slate-700 leading-relaxed mb-1"
@@ -261,6 +300,7 @@ function Chat() {
             </span>
           </div>
         );
+        return;
       }
 
       // --------------------------------------------------
@@ -271,7 +311,7 @@ function Chat() {
         trimmedLine.match(/^(\d+)\.\s+(.*)$/);
 
       if (numberedMatch) {
-        return (
+        renderedLines.push(
           <div
             key={index}
             className="flex gap-2 text-slate-700 leading-relaxed mb-1"
@@ -287,6 +327,7 @@ function Chat() {
             </span>
           </div>
         );
+        return;
       }
 
       // --------------------------------------------------
@@ -294,7 +335,7 @@ function Chat() {
       // --------------------------------------------------
 
       if (line.includes('[Image Content]')) {
-        return (
+        renderedLines.push(
           <p
             key={index}
             className="text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2 mt-2 italic"
@@ -302,13 +343,14 @@ function Chat() {
             {line}
           </p>
         );
+        return;
       }
 
       // --------------------------------------------------
       // Regular Paragraph
       // --------------------------------------------------
 
-      return (
+      renderedLines.push(
         <p
           key={index}
           className="text-slate-700 leading-relaxed mb-2"
@@ -317,6 +359,12 @@ function Chat() {
         </p>
       );
     });
+
+    if (inCodeBlock) {
+      flushCodeBlock('code-final');
+    }
+
+    return renderedLines;
   };
 
   // ==================================================
@@ -472,45 +520,9 @@ function Chat() {
                           SOURCE REFERENCES
                           ================================================== */}
 
-                      {message.sources &&
-                        message.sources.length > 0 && (
-                          <div className="flex flex-wrap gap-2 pl-1">
-
-                            {message.sources.map(
-                              (source, idx) => {
-                                const sourceLabel =
-                                  source.filename ||
-                                  source.file_id ||
-                                  'Source';
-
-                                const pageLabel =
-                                  source.page_number != null
-                                    ? ` · p.${source.page_number}`
-                                    : '';
-
-                                const label = `${sourceLabel}${pageLabel}`;
-
-                                return (
-                                  <div
-                                    key={idx}
-                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 border border-amber-200 rounded-md text-xs font-medium text-amber-800 hover:bg-amber-100 transition-colors cursor-default"
-                                    title={label}
-                                  >
-                                    <FileText
-                                      size={12}
-                                      className="text-amber-600 shrink-0"
-                                    />
-
-                                    <span className="truncate max-w-[150px]">
-                                      {label}
-                                    </span>
-                                  </div>
-                                );
-                              }
-                            )}
-
-                          </div>
-                        )}
+                      {message.sources && message.sources.length > 0 && (
+                        <SourceReferences sources={message.sources} />
+                      )}
 
                     </div>
                   </div>

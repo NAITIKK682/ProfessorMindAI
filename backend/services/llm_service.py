@@ -96,9 +96,9 @@ STRICT GROUNDING RULES
    ProfessorMind AI backend. Your responsibility is ONLY to generate
    the answer.
 
-9. If the retrieved material does not contain enough information to
-   answer the question, clearly say that the information is not
-   available in the uploaded lecture material.
+    9. If the retrieved material does not contain enough information to
+   answer the question, reply exactly:
+   "The uploaded notes do not provide enough information to answer this question."
 
 10. Stay faithful to the terminology and meaning of the lecture notes.
 
@@ -240,8 +240,7 @@ ANSWER
 
             if content:
 
-                # Remove accidental page citations
-                # if the model still produces them.
+                # Remove accidental citation syntax if the model still produces it.
                 content = _remove_generated_source_references(
                     content
                 )
@@ -384,16 +383,6 @@ def _remove_generated_source_references(
         flags=re.IGNORECASE
     )
 
-    # Examples:
-    # Page 9
-    # Page 12
-    content = re.sub(
-        r"\bPage\s+\d+(?:\s*[-–]\s*\d+)?\b",
-        "",
-        content,
-        flags=re.IGNORECASE
-    )
-
     # Clean excessive spaces created by removal
     content = re.sub(
         r"[ \t]{2,}",
@@ -406,6 +395,9 @@ def _remove_generated_source_references(
         "\n\n",
         content
     )
+
+    # A stray standalone SVG label is an output artifact, not lecture content.
+    content = re.sub(r"(?im)^\s*svg\s*$\n?", "", content)
 
     return content.strip()
 

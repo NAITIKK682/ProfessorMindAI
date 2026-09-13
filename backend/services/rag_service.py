@@ -1,8 +1,12 @@
-from typing import List, Dict, Any
+import logging
+from typing import Any, Dict
 
 from backend.services.retrieval_service import retrieve_chunks
 from backend.services.context_builder import build_context
 from backend.services.llm_service import generate_answer
+
+
+logger = logging.getLogger(__name__)
 
 
 def answer_question(
@@ -19,7 +23,7 @@ def answer_question(
         distance_threshold=distance_threshold
     )
 
-    if not results or not isinstance(results, list):
+    if not isinstance(results, list) or not results:
         return {
             "question": query,
             "answer": (
@@ -82,7 +86,8 @@ def answer_question(
         context=context
     )
 
-       # Build unique source references
+    # Build unique source references from retrieved metadata, never from the
+    # generated answer.
     unique_sources = {}
 
     for result in results:
@@ -90,10 +95,10 @@ def answer_question(
         filename = result.get("filename")
         page_number = result.get("page_number")
 
-        source_key = (
-            file_id or filename or "unknown",
-            page_number
-        )
+        if page_number is None:
+            continue
+
+        source_key = (file_id or filename or "unknown", page_number)
 
         if source_key not in unique_sources:
             unique_sources[source_key] = {
@@ -103,6 +108,13 @@ def answer_question(
             }
 
     sources = list(unique_sources.values())
+
+    logger.info(
+        "RAG query notebook=%s retrieved_chunks=%d sources=%s",
+        notebook_id,
+        len(results),
+        [(source["filename"], source["page_number"]) for source in sources]
+    )
 
     return {
         "question": query,
