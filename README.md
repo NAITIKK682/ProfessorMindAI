@@ -314,20 +314,53 @@ No backend environment variables are read. `frontend/.env.example` is empty. A l
 
 ## Running the Project
 
-### Backend
+## Backend
 
-From the repository root with the virtual environment active:
+From the repository root, activate the virtual environment:
 
 ```powershell
-PID:        11168
-Process:    python.exe
-Python:     C:\Python312\python.exe
-Command:    python -m uvicorn backend.main:app --host 127.0.0.1 --port 8001
-Started:    10:45:24 PM
-Port:       8001
+.\.venv-clean\Scripts\Activate.ps1
 ```
 
-The default local address is `http://127.0.0.1:8000`. FastAPI documentation is available at `http://127.0.0.1:8000/docs`.
+Then start the FastAPI backend using Uvicorn:
+
+```powershell
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8001
+```
+
+### Backend Server Details
+
+| Detail      | Value                                                             |
+| ----------- | ----------------------------------------------------------------- |
+| **PID**     | 11168                                                             |
+| **Process** | `python.exe`                                                      |
+| **Python**  | `C:\Python312\python.exe`                                         |
+| **Command** | `python -m uvicorn backend.main:app --host 127.0.0.1 --port 8001` |
+| **Host**    | `127.0.0.1`                                                       |
+| **Port**    | `8001`                                                            |
+| **Started** | 10:45:24 PM                                                       |
+
+### Local Backend URLs
+
+**Backend API:**
+
+```text
+http://127.0.0.1:8001
+```
+
+**FastAPI Swagger Documentation:**
+
+```text
+http://127.0.0.1:8001/docs
+```
+
+**Alternative ReDoc Documentation:**
+
+```text
+http://127.0.0.1:8001/redoc
+```
+
+> **Note:** Since the backend is running on port **8001**, all API requests and FastAPI documentation URLs should use `8001`, not `8000`.
 
 ### Frontend
 

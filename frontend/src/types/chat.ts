@@ -5,11 +5,12 @@ export interface QuestionRequest {
 }
 
 export interface ChatSource {
-	file_id: string
-	page_number: number
-	chunk_index: number
+	file_id: string | null
+	filename?: string | null
+	page_number: number | null
+	chunk_index: number | null
 	text: string
-	distance: number
+	distance: number | null
 }
 
 export interface QuestionResponse {

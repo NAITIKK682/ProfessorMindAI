@@ -5,32 +5,12 @@ from backend.services.context_builder import build_context
 from backend.services.llm_service import generate_answer
 
 
-# ==================================================
-# Answer Question Using Notebook RAG
-# ==================================================
-
 def answer_question(
     query: str,
     notebook_id: str,
     top_k: int = 8,
     distance_threshold: float = 1.2
 ) -> Dict[str, Any]:
-    """
-    Orchestrates the RAG pipeline to answer a question based on a specific notebook.
-    
-    Args:
-        query: The student's question.
-        notebook_id: The ID of the notebook to search within.
-        top_k: Number of top chunks to retrieve.
-        distance_threshold: Maximum distance threshold for chunk relevance.
-        
-    Returns:
-        A dictionary containing the question, the generated answer, and source metadata.
-    """
-
-    # ------------------------------------------
-    # 1. Retrieve relevant chunks
-    # ------------------------------------------
 
     results = retrieve_chunks(
         query=query,
@@ -39,12 +19,7 @@ def answer_question(
         distance_threshold=distance_threshold
     )
 
-    # ------------------------------------------
-    # 2. No relevant information found
-    # ------------------------------------------
-
-    if not results:
-
+    if not results or not isinstance(results, list):
         return {
             "question": query,
             "answer": (
@@ -54,73 +29,80 @@ def answer_question(
             "sources": []
         }
 
-    # ------------------------------------------
-    # 3. Normalize results to prevent type errors
-    # ------------------------------------------
-    # The "string indices must be integers" error occurs if `results` contains 
-    # raw strings instead of dictionaries, and downstream services (like 
-    # `build_context`) try to access keys like `chunk["text"]`.
-    
     normalized_results = []
+
     for result in results:
+
         if isinstance(result, dict):
-            normalized_results.append(result)
+
+            normalized_results.append(
+                result
+            )
+
         elif isinstance(result, str):
-            # If it's a raw string, wrap it in a dictionary
+
             normalized_results.append({
                 "text": result,
                 "file_id": None,
+                "filename": None,
                 "page_number": None,
                 "chunk_index": None,
+                "page_chunk_index": None,
                 "distance": None
             })
+
         else:
-            # Fallback for any other unexpected types
+
             normalized_results.append({
                 "text": str(result),
                 "file_id": None,
+                "filename": None,
                 "page_number": None,
                 "chunk_index": None,
+                "page_chunk_index": None,
                 "distance": None
             })
-    
+
     results = normalized_results
 
-    # ------------------------------------------
-    # 4. Build context
-    # ------------------------------------------
+    # ---------------------------------
+    # Build RAG context
+    # ---------------------------------
 
     context = build_context(
         results
     )
 
-    # ------------------------------------------
-    # 5. Generate answer using LLM
-    # ------------------------------------------
+    # ---------------------------------
+    # Generate grounded answer
+    # ---------------------------------
 
     answer = generate_answer(
         query=query,
         context=context
     )
 
-    # ------------------------------------------
-    # 6. Prepare sources
-    # ------------------------------------------
+       # Build unique source references
+    unique_sources = {}
 
-    sources = [
-        {
-            "file_id": result.get("file_id"),
-            "page_number": result.get("page_number"),
-            "chunk_index": result.get("chunk_index"),
-            "text": result.get("text"),
-            "distance": result.get("distance")
-        }
-        for result in results
-    ]
+    for result in results:
+        file_id = result.get("file_id")
+        filename = result.get("filename")
+        page_number = result.get("page_number")
 
-    # ------------------------------------------
-    # 7. Return final response
-    # ------------------------------------------
+        source_key = (
+            file_id or filename or "unknown",
+            page_number
+        )
+
+        if source_key not in unique_sources:
+            unique_sources[source_key] = {
+                "file_id": file_id,
+                "filename": filename,
+                "page_number": page_number
+            }
+
+    sources = list(unique_sources.values())
 
     return {
         "question": query,

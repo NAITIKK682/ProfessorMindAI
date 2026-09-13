@@ -165,6 +165,7 @@ async def upload_pdf(
             for chunk in chunks:
 
                 chunk["file_id"] = file_id
+                chunk["filename"] = original_filename
 
             # -----------------------------
             # 10. Generate embeddings

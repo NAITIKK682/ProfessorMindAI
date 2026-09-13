@@ -18,21 +18,17 @@ const api = axios.create({
     'Accept': 'application/json',
     'Content-Type': 'application/json'
   },
-  timeout: 30000, // 30-second timeout to prevent hanging requests
+  timeout: 180000, // 3-minute timeout for local LLM requests (180,000 ms)
 });
 
 // ==================================================
 // Request Interceptor
 // ==================================================
-// Useful for adding auth tokens, tracing IDs, etc., in the future.
 
 api.interceptors.request.use(
   (config) => {
-    // Example: Add auth token if it exists
-    // const token = localStorage.getItem('auth_token');
-    // if (token && config.headers) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    // Add request start time for timeout tracking
+    (config as any)._requestStartTime = Date.now();
     return config;
   },
   (error) => {
@@ -43,16 +39,30 @@ api.interceptors.request.use(
 // ==================================================
 // Response Interceptor
 // ==================================================
-// Centralized error handling for consistent UX.
 
 api.interceptors.response.use(
   (response) => {
     return response;
   },
   (error: AxiosError) => {
-    // Handle specific global errors here if needed
+    const now = Date.now();
+    
+    // Calculate elapsed time
+    let elapsedTime = 0;
+    if ((error.config as any)?._requestStartTime) {
+      elapsedTime = now - (error.config as any)._requestStartTime;
+    }
+
+    // Handle specific global errors
     if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-      console.error('API Request Timeout: The server took too long to respond.');
+      const minutes = Math.floor(elapsedTime / 60000);
+      const seconds = Math.floor((elapsedTime % 60000) / 1000);
+      
+      console.error(`API Request Timeout: The server took too long to respond. Elapsed: ${minutes}m ${seconds}s`);
+      
+      // Add custom timeout error to be handled by getApiError
+      (error as any).isTimeout = true;
+      (error as any).elapsedTime = elapsedTime;
     } else if (!error.response) {
       console.error('Network Error: Unable to reach the backend server.');
     }
@@ -69,7 +79,19 @@ export function getApiError(error: unknown, fallback = 'An unexpected error occu
   if (axios.isAxiosError(error)) {
     const responseData = error.response?.data as ApiErrorResponse | undefined;
     
-    // Handle FastAPI/Pydantic validation errors (often an array of errors)
+    // Handle timeout errors specially
+    if ((error as any).isTimeout) {
+      const elapsedTime = (error as any).elapsedTime || 0;
+      const minutes = Math.floor(elapsedTime / 60000);
+      const seconds = Math.floor((elapsedTime % 60000) / 1000);
+      
+      if (minutes >= 2) {
+        return `The AI is still processing your request. Complex questions may take up to 3 minutes. Please wait... (${minutes}m ${seconds}s elapsed)`;
+      }
+      return `Still working on your request... (${minutes}m ${seconds}s elapsed)`;
+    }
+    
+    // Handle FastAPI/Pydantic validation errors
     if (responseData?.detail && Array.isArray(responseData.detail)) {
       return responseData.detail
         .map((entry: unknown) => {
@@ -93,7 +115,7 @@ export function getApiError(error: unknown, fallback = 'An unexpected error occu
       return 'The backend server is unavailable. Please ensure FastAPI is running.';
     }
 
-    // Handle specific HTTP status codes with friendly messages
+    // Handle specific HTTP status codes
     if (error.response.status === 404) {
       return 'The requested resource was not found.';
     }
@@ -102,7 +124,7 @@ export function getApiError(error: unknown, fallback = 'An unexpected error occu
     }
   }
 
-  // Fallback for non-Axios errors or unknown formats
+  // Fallback for non-Axios errors
   return error instanceof Error ? error.message : fallback;
 }
 

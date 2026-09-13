@@ -2,16 +2,37 @@ from typing import List, Dict, Any
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
-def chunk_text(pages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def chunk_text(
+    pages: List[Dict[str, Any]],
+    filename: str | None = None,
+    file_id: str | None = None
+) -> List[Dict[str, Any]]:
     """
     Splits extracted PDF pages into smaller overlapping text chunks.
-    
+
+    Each chunk keeps document identity and page metadata so that
+    retrieved answers can show accurate source references.
+
     Args:
-        pages: A list of dictionaries, each containing 'text' and 'page_number'.
-        
+        pages:
+            List of dictionaries containing:
+            - page_number
+            - text
+
+        filename:
+            Original PDF filename.
+
+        file_id:
+            Unique uploaded file ID.
+
     Returns:
-        A list of chunk dictionaries with 'chunk_index', 'page_number', 
-        'page_chunk_index', and 'text'.
+        List of chunk dictionaries containing:
+        - chunk_index
+        - page_number
+        - page_chunk_index
+        - filename
+        - file_id
+        - text
     """
 
     if not pages:
@@ -30,19 +51,22 @@ def chunk_text(pages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     for page in pages:
 
         # ------------------------------------------
-        # Safely extract text and page number
+        # Safely extract page information
         # ------------------------------------------
-        
+
         page_text = page.get("text", "")
         page_number = page.get("page_number", 1)
 
-        # Ensure text is a string
         if not isinstance(page_text, str):
             page_text = str(page_text)
 
-        # Skip empty pages to prevent unnecessary processing
+        # Skip empty pages
         if not page_text.strip():
             continue
+
+        # ------------------------------------------
+        # Split current page into chunks
+        # ------------------------------------------
 
         page_chunks = text_splitter.split_text(
             page_text
@@ -51,9 +75,18 @@ def chunk_text(pages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         for page_chunk_index, chunk in enumerate(page_chunks):
 
             chunks.append({
+                # Global chunk position
                 "chunk_index": chunk_index,
+
+                # Page information
                 "page_number": page_number,
                 "page_chunk_index": page_chunk_index,
+
+                # Document identity
+                "filename": filename,
+                "file_id": file_id,
+
+                # Actual retrieved text
                 "text": chunk
             })
 

@@ -9,7 +9,10 @@ from pathlib import Path
 # ---------------------------------
 
 NOTEBOOKS_DIR = Path("storage/notebooks")
-NOTEBOOKS_DIR.mkdir(parents=True, exist_ok=True)
+NOTEBOOKS_DIR.mkdir(
+    parents=True,
+    exist_ok=True
+)
 
 
 # ---------------------------------
@@ -18,7 +21,11 @@ NOTEBOOKS_DIR.mkdir(parents=True, exist_ok=True)
 
 def get_notebook_faiss_dir(notebook_id):
 
-    faiss_dir = NOTEBOOKS_DIR / str(notebook_id) / "faiss"
+    faiss_dir = (
+        NOTEBOOKS_DIR /
+        str(notebook_id) /
+        "faiss"
+    )
 
     faiss_dir.mkdir(
         parents=True,
@@ -38,7 +45,6 @@ def create_faiss_index(embeddings):
         embeddings
     ).astype("float32")
 
-    # Ensure embeddings are 2D to prevent IndexError on shape[1]
     if embeddings.ndim == 1:
         embeddings = embeddings.reshape(1, -1)
 
@@ -151,7 +157,6 @@ def add_to_notebook_faiss(
         embeddings
     ).astype("float32")
 
-    # Ensure embeddings are 2D
     if embeddings.ndim == 1:
         embeddings = embeddings.reshape(1, -1)
 
@@ -162,7 +167,7 @@ def add_to_notebook_faiss(
     )
 
     # ---------------------------------
-    # First source in notebook
+    # Create first index
     # ---------------------------------
 
     if index is None:
@@ -172,7 +177,7 @@ def add_to_notebook_faiss(
         )
 
     # ---------------------------------
-    # Add new vectors
+    # Add vectors
     # ---------------------------------
 
     index.add(
@@ -188,7 +193,7 @@ def add_to_notebook_faiss(
     )
 
     # ---------------------------------
-    # Save updated notebook index
+    # Save
     # ---------------------------------
 
     save_notebook_faiss(
@@ -216,12 +221,11 @@ def search_faiss(
         query_embedding
     ).astype("float32")
 
-    # Ensure query embedding is 2D (1, dimension) for FAISS search
     if query_embedding.ndim == 1:
-        query_embedding = query_embedding.reshape(1, -1)
-
-    # Prevent requesting more vectors
-    # than the index contains
+        query_embedding = query_embedding.reshape(
+            1,
+            -1
+        )
 
     actual_k = min(
         top_k,
@@ -249,38 +253,71 @@ def search_faiss(
         if distance > distance_threshold:
             continue
 
-        # Prevent IndexError if index and metadata get out of sync
         if index_position >= len(chunks):
             continue
 
-        # --------------------------------------------------
-        # FIX: Prevent "string indices must be integers" error
-        # --------------------------------------------------
-        # The error occurs when `chunks` contains raw strings 
-        # instead of dictionaries, and we try to access keys 
-        # like `chunk["text"]`. We normalize the data here.
-        
         chunk_data = chunks[index_position]
-        
+
+        # ---------------------------------
+        # Normalize old metadata
+        # ---------------------------------
+
         if isinstance(chunk_data, str):
+
             chunk_data = {
-                "text": chunk_data, 
-                "file_id": None, 
-                "page_number": None
-            }
-        elif not isinstance(chunk_data, dict):
-            chunk_data = {
-                "text": str(chunk_data), 
-                "file_id": None, 
-                "page_number": None
+                "text": chunk_data,
+                "file_id": None,
+                "filename": None,
+                "page_number": None,
+                "page_chunk_index": None
             }
 
+        elif not isinstance(chunk_data, dict):
+
+            chunk_data = {
+                "text": str(chunk_data),
+                "file_id": None,
+                "filename": None,
+                "page_number": None,
+                "page_chunk_index": None
+            }
+
+        # ---------------------------------
+        # Return complete source metadata
+        # ---------------------------------
+
         results.append({
-            "chunk_index": int(index_position),
-            "file_id": chunk_data.get("file_id"),
-            "text": chunk_data.get("text", ""),
-            "page_number": chunk_data.get("page_number"),
-            "distance": float(distance)
+            "chunk_index": int(
+                chunk_data.get(
+                    "chunk_index",
+                    index_position
+                )
+            ),
+
+            "file_id": chunk_data.get(
+                "file_id"
+            ),
+
+            "filename": chunk_data.get(
+                "filename"
+            ),
+
+            "page_number": chunk_data.get(
+                "page_number"
+            ),
+
+            "page_chunk_index": chunk_data.get(
+                "page_chunk_index"
+            ),
+
+            "text": chunk_data.get(
+                "text",
+                ""
+            ),
+
+            "distance": float(
+                distance
+            )
         })
 
     return results
