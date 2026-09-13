@@ -1,124 +1,132 @@
-
-````markdown
 # ProfessorMind AI
 
-### Professor-Centric AI Learning Assistant Using Retrieval-Augmented Generation for Private Lecture Knowledge Retrieval
+## Professor-Centric AI Learning Assistant Using Retrieval-Augmented Generation for Private Lecture Knowledge Retrieval
 
-ProfessorMind AI is a private academic knowledge assistant designed to help students interact with their lecture materials using Artificial Intelligence.
+> **Private Academic Knowledge • Intelligent Retrieval • Grounded Answers**
 
-The system allows students to upload lecture PDFs, process their contents, create semantic vector representations, store them in FAISS, retrieve the most relevant sections for a question, and generate grounded answers using a locally running Llama 3.2 model through Ollama.
+ProfessorMind AI is a professor-centric academic learning assistant designed to help students interact with their own lecture materials using Artificial Intelligence and Retrieval-Augmented Generation (RAG).
 
-The primary objective is to provide answers based on the student's own academic material instead of relying on general-purpose model knowledge.
+The system allows students to upload lecture PDFs, extract their content, divide the extracted text into meaningful chunks, generate semantic embeddings, store those embeddings in FAISS, retrieve the most relevant academic content for a question, and generate a grounded answer using a locally running **Llama 3.2** model through **Ollama**.
+
+The primary goal is simple:
+
+> **The AI should answer from the student's uploaded academic knowledge whenever possible instead of relying only on general-purpose model knowledge.**
 
 ---
 
 ## Table of Contents
 
-- [Project Overview](#project-overview)
-- [Problem Statement](#problem-statement)
-- [Project Objectives](#project-objectives)
-- [Core Idea](#core-idea)
-- [Key Features](#key-features)
-- [System Architecture](#system-architecture)
-- [End-to-End Workflow](#end-to-end-workflow)
-- [Current RAG Pipeline](#current-rag-pipeline)
-- [Retrieval-Augmented Generation](#retrieval-augmented-generation)
-- [PDF Ingestion Pipeline](#pdf-ingestion-pipeline)
-- [Text Extraction](#text-extraction)
-- [Document Chunking](#document-chunking)
-- [Embeddings](#embeddings)
-- [FAISS Vector Store](#faiss-vector-store)
-- [Question Answering Pipeline](#question-answering-pipeline)
-- [Context Construction](#context-construction)
-- [LLM Generation](#llm-generation)
-- [Grounded Answering](#grounded-answering)
-- [Source References](#source-references)
-- [Notebook Isolation](#notebook-isolation)
-- [Technology Stack](#technology-stack)
-- [Project Architecture](#project-architecture)
-- [Backend Architecture](#backend-architecture)
-- [Frontend Architecture](#frontend-architecture)
-- [Database Architecture](#database-architecture)
-- [Storage Architecture](#storage-architecture)
-- [API Reference](#api-reference)
-- [API Request Example](#api-request-example)
-- [API Response Structure](#api-response-structure)
-- [Environment Setup](#environment-setup)
-- [Prerequisites](#prerequisites)
-- [Backend Setup](#backend-setup)
-- [Frontend Setup](#frontend-setup)
-- [Ollama Setup](#ollama-setup)
-- [Running the Application](#running-the-application)
-- [Project Directory Structure](#project-directory-structure)
-- [Data Flow](#data-flow)
-- [Retrieval Strategy](#retrieval-strategy)
-- [Retrieval Parameters](#retrieval-parameters)
-- [Retrieval Evaluation](#retrieval-evaluation)
-- [Testing](#testing)
-- [Failure Handling](#failure-handling)
-- [Security Considerations](#security-considerations)
-- [Privacy](#privacy)
-- [Current Implementation Status](#current-implementation-status)
-- [Known Limitations](#known-limitations)
-- [Future Scope](#future-scope)
-- [Multimodal Expansion](#multimodal-expansion)
-- [Performance Considerations](#performance-considerations)
-- [Design Principles](#design-principles)
-- [Why RAG](#why-rag)
-- [Why FAISS](#why-faiss)
-- [Why Local LLM](#why-local-llm)
-- [Why Ollama](#why-ollama)
-- [Why Sentence Transformers](#why-sentence-transformers)
-- [Advantages](#advantages)
-- [Challenges](#challenges)
-- [Use Cases](#use-cases)
-- [Academic Value](#academic-value)
-- [Engineering Value](#engineering-value)
-- [Viva Explanation](#viva-explanation)
-- [Common Viva Questions](#common-viva-questions)
-- [Useful Commands](#useful-commands)
-- [Development Workflow](#development-workflow)
-- [Troubleshooting](#troubleshooting)
-- [Responsible AI Considerations](#responsible-ai-considerations)
-- [Future Production Architecture](#future-production-architecture)
-- [Project Status](#project-status)
-- [Conclusion](#conclusion)
+* [Project Overview](#project-overview)
+* [Problem Statement](#problem-statement)
+* [Project Objectives](#project-objectives)
+* [Core Idea](#core-idea)
+* [Key Features](#key-features)
+* [System Architecture](#system-architecture)
+* [End-to-End Workflow](#end-to-end-workflow)
+* [Current RAG Pipeline](#current-rag-pipeline)
+* [Retrieval-Augmented Generation](#retrieval-augmented-generation)
+* [PDF Ingestion Pipeline](#pdf-ingestion-pipeline)
+* [Text Extraction](#text-extraction)
+* [Document Chunking](#document-chunking)
+* [Embeddings](#embeddings)
+* [FAISS Vector Search](#faiss-vector-search)
+* [Question Answering Pipeline](#question-answering-pipeline)
+* [Context Construction](#context-construction)
+* [LLM Generation](#llm-generation)
+* [Grounded Answering](#grounded-answering)
+* [Source References](#source-references)
+* [Notebook Isolation](#notebook-isolation)
+* [Technology Stack](#technology-stack)
+* [Project Architecture](#project-architecture)
+* [Backend Architecture](#backend-architecture)
+* [Frontend Architecture](#frontend-architecture)
+* [Database Architecture](#database-architecture)
+* [Storage Architecture](#storage-architecture)
+* [API Reference](#api-reference)
+* [Environment Setup](#environment-setup)
+* [Prerequisites](#prerequisites)
+* [Backend Setup](#backend-setup)
+* [Frontend Setup](#frontend-setup)
+* [Ollama Setup](#ollama-setup)
+* [Running the Application](#running-the-application)
+* [Project Directory Structure](#project-directory-structure)
+* [Data Flow](#data-flow)
+* [Retrieval Strategy](#retrieval-strategy)
+* [Retrieval Parameters](#retrieval-parameters)
+* [Retrieval Evaluation](#retrieval-evaluation)
+* [Testing](#testing)
+* [Failure Handling](#failure-handling)
+* [Security Considerations](#security-considerations)
+* [Privacy](#privacy)
+* [Current Implementation Status](#current-implementation-status)
+* [Known Limitations](#known-limitations)
+* [Future Scope](#future-scope)
+* [Multimodal Expansion](#multimodal-expansion)
+* [Performance Considerations](#performance-considerations)
+* [Design Principles](#design-principles)
+* [Why RAG](#why-rag)
+* [Why FAISS](#why-faiss)
+* [Why Local LLM](#why-local-llm)
+* [Why Ollama](#why-ollama)
+* [Why Sentence Transformers](#why-sentence-transformers)
+* [Advantages](#advantages)
+* [Challenges](#challenges)
+* [Use Cases](#use-cases)
+* [Academic Value](#academic-value)
+* [Engineering Value](#engineering-value)
+* [Viva Explanation](#viva-explanation)
+* [Common Viva Questions](#common-viva-questions)
+* [Useful Commands](#useful-commands)
+* [Development Workflow](#development-workflow)
+* [Troubleshooting](#troubleshooting)
+* [Responsible AI Considerations](#responsible-ai-considerations)
+* [Future Production Architecture](#future-production-architecture)
+* [Retrieval Improvement Roadmap](#retrieval-improvement-roadmap)
+* [Project Status](#project-status)
+* [Project Vision](#project-vision)
+* [Conclusion](#conclusion)
 
 ---
 
 # Project Overview
 
-ProfessorMind AI is a professor-centric academic learning assistant that combines:
+ProfessorMind AI is a private academic knowledge assistant that combines modern Artificial Intelligence techniques with full-stack software engineering.
 
-- Document processing
-- Semantic embeddings
-- Vector search
-- Retrieval-Augmented Generation
-- Local Large Language Models
-- Source-aware answering
-- Notebook-based knowledge isolation
-- React-based user interface
-- FastAPI backend
-- PostgreSQL/SQLAlchemy-based application data management
-- FAISS-based vector retrieval
+The current system combines:
+
+* PDF document processing
+* Page-level text extraction
+* Document chunking
+* Semantic embeddings
+* Vector similarity search
+* Retrieval-Augmented Generation
+* Local Large Language Model inference
+* Source-aware answering
+* Notebook-based knowledge isolation
+* React frontend
+* TypeScript
+* FastAPI backend
+* Database-backed application metadata
+* FAISS-based vector retrieval
+* Local PDF storage
 
 The system is designed around one fundamental principle:
 
-> **The AI should answer from the student's uploaded academic knowledge whenever possible.**
+> **Retrieve relevant academic evidence first, then generate the answer from that evidence.**
 
-Instead of directly asking an LLM to answer a question from its pretrained knowledge, ProfessorMind AI first searches the student's uploaded lecture material.
+Instead of directly sending a student's question to an LLM, ProfessorMind AI first searches the student's uploaded lecture material.
 
-The retrieved content is then provided to the LLM as context.
+The retrieved content is then supplied to the local LLM as context.
 
-The LLM generates an answer based on that context.
+The LLM generates a natural-language answer using the retrieved information.
 
 ---
 
 # Problem Statement
 
-Students commonly maintain lecture notes, PDFs, presentations, assignments, and other academic documents across different locations.
+Students often maintain lecture notes, PDFs, presentations, assignments, and other academic documents across multiple locations.
 
-Finding a specific concept inside large lecture documents can be difficult and time-consuming.
+Finding a specific concept inside a large lecture document can be difficult and time-consuming.
 
 Traditional keyword search also has limitations.
 
@@ -126,11 +134,11 @@ For example, a student may ask:
 
 > "Explain the difference between batch and stochastic gradient descent."
 
-The exact words used in the question may not appear together in the document.
+The exact wording of the question may not appear in the lecture notes.
 
-A semantic retrieval system can identify conceptually related content even when the wording is different.
+A semantic retrieval system can identify conceptually related information even when the wording is different.
 
-ProfessorMind AI addresses this problem by creating a searchable semantic representation of academic documents.
+ProfessorMind AI addresses this problem by creating a searchable semantic representation of the student's academic documents.
 
 ---
 
@@ -139,20 +147,23 @@ ProfessorMind AI addresses this problem by creating a searchable semantic repres
 The major objectives of ProfessorMind AI are:
 
 1. Allow students to upload academic lecture PDFs.
-2. Extract text from uploaded documents.
-3. Preserve page-level document information.
-4. Divide documents into manageable chunks.
-5. Generate semantic embeddings for each chunk.
-6. Store embeddings in a FAISS vector index.
-7. Retrieve relevant chunks for student questions.
-8. Build a structured context from retrieved chunks.
-9. Send the context to a local Llama 3.2 model.
-10. Generate answers grounded in uploaded lecture material.
-11. Provide source document and page references.
-12. Keep knowledge separated between notebooks.
-13. Reduce dependence on external cloud LLM APIs.
-14. Provide a clean academic-focused user interface.
-15. Create a foundation for future multimodal learning capabilities.
+2. Validate uploaded PDF files.
+3. Store source documents.
+4. Extract text from PDF pages.
+5. Preserve page-level information.
+6. Divide extracted text into manageable chunks.
+7. Generate semantic embeddings for each chunk.
+8. Store embeddings in a FAISS vector index.
+9. Store associated document and chunk metadata.
+10. Retrieve relevant chunks for student questions.
+11. Construct structured context from retrieved chunks.
+12. Send grounded context to a local Llama 3.2 model.
+13. Generate answers based on uploaded academic material.
+14. Return source document and page information.
+15. Keep knowledge separated between notebooks.
+16. Reduce unnecessary dependence on external LLM APIs.
+17. Provide an academic-focused user interface.
+18. Provide a foundation for future multimodal learning capabilities.
 
 ---
 
@@ -164,97 +175,145 @@ The system follows this simplified process:
 Student Question
        |
        v
-Convert Question to Embedding
+Question Embedding
        |
        v
-Search FAISS Vector Index
+FAISS Similarity Search
        |
        v
-Retrieve Relevant Lecture Chunks
+Relevant Lecture Chunks
        |
        v
-Build Context
+Context Construction
        |
        v
-Local Llama 3.2
+Grounded Prompt
        |
        v
-Grounded Answer
+Llama 3.2 via Ollama
        |
        v
-Source / Page References
-````
+Generated Answer
+       |
+       v
+Source References
+```
 
 The LLM is not treated as the primary knowledge source.
 
-The uploaded lecture material is treated as the primary knowledge source.
+The student's uploaded academic material is treated as the primary retrieval knowledge source.
 
 ---
 
 # Key Features
 
-## Academic Knowledge Workspace
+## 1. Academic Knowledge Workspace
 
-Students can organize their academic material into notebooks.
+Students can organize academic material into notebooks.
 
 Each notebook represents an isolated knowledge space.
 
+Example:
+
+```text
+Deep Learning Notebook
+│
+├── CNN Notes.pdf
+├── RNN Notes.pdf
+├── Deep Learning Lecture.pdf
+└── Notebook-specific retrieval data
+```
+
 ---
 
-## PDF Upload
+## 2. PDF Upload
 
 The current implementation supports PDF document ingestion.
 
-The system:
+The general process is:
 
-1. Receives the PDF.
-2. Validates the file.
-3. Stores the source document.
-4. Extracts page-level text.
-5. Creates chunks.
-6. Generates embeddings.
-7. Stores the vectors in FAISS.
-8. Stores document metadata.
-
----
-
-## Semantic Search
-
-The system does not depend only on exact keyword matching.
-
-Questions are converted into embeddings and compared against document embeddings.
-
-This allows conceptually related chunks to be retrieved.
-
----
-
-## Retrieval-Augmented Generation
-
-ProfessorMind AI uses a RAG architecture.
-
-The system retrieves relevant academic information before asking the LLM to generate the answer.
+```text
+Upload PDF
+    |
+    v
+Validate File
+    |
+    v
+Store Source PDF
+    |
+    v
+Extract Text
+    |
+    v
+Create Chunks
+    |
+    v
+Generate Embeddings
+    |
+    v
+Store in FAISS
+    |
+    v
+Store Metadata
+```
 
 ---
 
-## Local LLM
+## 3. Semantic Search
+
+ProfessorMind AI does not depend only on exact keyword matching.
+
+Questions are converted into vector embeddings and compared with document chunk embeddings.
+
+This enables conceptually related content to be retrieved even when the exact wording differs.
+
+---
+
+## 4. Retrieval-Augmented Generation
+
+The project uses a RAG architecture.
+
+The system retrieves relevant academic content before asking the LLM to generate the answer.
+
+```text
+Question
+   |
+   v
+Retrieval
+   |
+   v
+Relevant Academic Context
+   |
+   v
+LLM
+   |
+   v
+Grounded Answer
+```
+
+---
+
+## 5. Local LLM
 
 The current implementation uses:
 
 ```text
+Ollama
+   |
+   v
 Llama 3.2
-      |
-    Ollama
-      |
-    Local Machine
+   |
+   v
+Local Machine
 ```
 
-This provides a local inference workflow without requiring the academic document content to be sent to a third-party hosted LLM API.
+This enables local LLM inference without requiring the lecture content to be sent to a third-party hosted LLM API for generation.
 
 ---
 
-## Source References
+## 6. Source References
 
-Retrieved document information is returned with metadata such as:
+Retrieved information can include metadata such as:
 
 * File ID
 * Filename
@@ -262,44 +321,46 @@ Retrieved document information is returned with metadata such as:
 * Chunk index
 * Retrieved text
 
-This allows the interface to display where the answer context came from.
+This allows the frontend to display where retrieved information originated.
 
 ---
 
-## Notebook Isolation
+## 7. Notebook Isolation
 
-Each notebook has its own retrieval space.
+Each notebook has its own academic knowledge space.
 
 Conceptually:
 
 ```text
 Notebook A
-   |
-   +-- Documents
-   +-- Chunks
-   +-- FAISS Index
+│
+├── Documents
+├── Chunks
+├── FAISS Index
+└── Metadata
 
 Notebook B
-   |
-   +-- Documents
-   +-- Chunks
-   +-- FAISS Index
+│
+├── Documents
+├── Chunks
+├── FAISS Index
+└── Metadata
 ```
 
-A question associated with one notebook should retrieve information from that notebook's knowledge base.
+A question associated with Notebook A should retrieve information from Notebook A's knowledge base rather than unrelated notebook content.
 
 ---
 
 # System Architecture
 
-The high-level system architecture is:
+The high-level architecture of ProfessorMind AI is:
 
 ```mermaid
 flowchart TB
 
     USER[Student]
 
-    subgraph FRONTEND[Frontend - React + Vite]
+    subgraph FRONTEND[Frontend - React + TypeScript + Vite]
         UI[ProfessorMind Web Interface]
         NOTEBOOK_UI[Notebook Management]
         UPLOAD_UI[PDF Upload]
@@ -309,7 +370,7 @@ flowchart TB
 
     subgraph BACKEND[Backend - FastAPI]
         API[REST API]
-        UPLOAD[Upload Service]
+        UPLOAD[Upload Processing]
         QUESTION[Question API]
         RAG[RAG Service]
         RETRIEVAL[Retrieval Service]
@@ -318,10 +379,10 @@ flowchart TB
     end
 
     subgraph PROCESSING[Document Processing]
-        PDF[PDF Document]
-        EXTRACT[PyMuPDF Text Extraction]
+        PDF[PDF]
+        EXTRACT[PyMuPDF]
         CHUNK[Text Chunking]
-        EMBED[Sentence Transformer Embeddings]
+        EMBED[Sentence Transformers]
     end
 
     subgraph STORAGE[Storage Layer]
@@ -337,6 +398,7 @@ flowchart TB
     end
 
     USER --> FRONTEND
+
     FRONTEND --> API
 
     API --> UPLOAD
@@ -362,18 +424,16 @@ flowchart TB
     LLM --> OLLAMA
     OLLAMA --> LLAMA
 
-    RAG --> QUESTION
     QUESTION --> FRONTEND
-
-    FRONTEND --> SOURCE_UI
     FRONTEND --> CHAT_UI
+    FRONTEND --> SOURCE_UI
 ```
 
 ---
 
 # End-to-End Workflow
 
-The complete system workflow is:
+The complete document and question workflow is:
 
 ```mermaid
 flowchart LR
@@ -415,14 +475,13 @@ flowchart LR
     N --> O
     O --> P
     M --> Q
-    P --> Q
 ```
 
 ---
 
 # Current RAG Pipeline
 
-The currently implemented RAG pipeline is:
+The currently implemented RAG pipeline can be represented as:
 
 ```text
 PDF
@@ -434,7 +493,7 @@ PyMuPDF
 Page-Level Text
  |
  v
-Chunking
+Text Chunking
  |
  v
 Sentence Transformer
@@ -473,23 +532,27 @@ Source References
 
 ## What is RAG?
 
-Retrieval-Augmented Generation combines two major operations:
+RAG stands for:
+
+> **Retrieval-Augmented Generation**
+
+RAG combines two major operations:
 
 ```text
 Retrieval
-+
+    +
 Generation
 ```
 
 ### Retrieval
 
-The system searches an external knowledge source for relevant information.
+The system searches an external knowledge source for information relevant to the user's question.
+
+In ProfessorMind AI, this knowledge source is the student's uploaded academic material.
 
 ### Generation
 
-The retrieved information is passed to a language model, which generates a natural-language answer.
-
-ProfessorMind AI uses the student's uploaded lecture material as the retrieval knowledge source.
+The retrieved information is supplied to a language model, which generates a natural-language response.
 
 ---
 
@@ -499,21 +562,13 @@ ProfessorMind AI uses the student's uploaded lecture material as the retrieval k
 flowchart TD
 
     QUESTION[Student Question]
-
     EMBED[Question Embedding]
-
     SEARCH[FAISS Similarity Search]
-
     RESULTS[Relevant Lecture Chunks]
-
     CONTEXT[Context Builder]
-
     PROMPT[Grounded Prompt]
-
     LLM[Llama 3.2]
-
     ANSWER[Generated Answer]
-
     SOURCES[Source References]
 
     QUESTION --> EMBED
@@ -530,28 +585,20 @@ flowchart TD
 
 # PDF Ingestion Pipeline
 
-The current implementation begins with PDF ingestion.
+The current document ingestion process begins with PDF processing.
 
 ```mermaid
 flowchart TD
 
     PDF[Uploaded PDF]
-
     VALIDATE[File Validation]
-
     STORE[Store Source PDF]
-
     EXTRACT[Extract Text with PyMuPDF]
-
     PAGE[Page-Level Metadata]
-
     CHUNK[Chunk Extracted Text]
-
     EMBED[Generate Embeddings]
-
     INDEX[FAISS Index]
-
-    METADATA[Metadata Storage]
+    METADATA[Chunk Metadata]
 
     PDF --> VALIDATE
     VALIDATE --> STORE
@@ -567,7 +614,7 @@ flowchart TD
 
 # Text Extraction
 
-The current PDF processing implementation uses PyMuPDF.
+The current PDF processing implementation uses **PyMuPDF**.
 
 The extraction process preserves page information.
 
@@ -595,11 +642,9 @@ Page information is important because the final system needs to identify the sou
 
 # Document Chunking
 
-Large documents are not sent directly to the embedding model or LLM as one large block.
+Large documents are not treated as one giant text block.
 
 The extracted text is divided into smaller chunks.
-
-Example:
 
 ```text
 Document
@@ -611,7 +656,7 @@ Document
    +-- ...
 ```
 
-Each chunk can contain metadata such as:
+Each chunk can be associated with metadata such as:
 
 ```text
 file_id
@@ -621,7 +666,7 @@ chunk_index
 text
 ```
 
-Chunking improves retrieval because the system can retrieve specific portions of a document rather than an entire document.
+Chunking improves retrieval because the system can retrieve specific portions of a document instead of an entire document.
 
 ---
 
@@ -633,33 +678,31 @@ Conceptually:
 
 ```text
 "Gradient Descent"
-
         |
         v
-
 [0.12, -0.45, 0.71, ...]
 ```
 
 Semantically similar text tends to have similar vector representations.
 
-ProfessorMind AI uses Sentence Transformers to generate embeddings.
+ProfessorMind AI uses **Sentence Transformers** to generate embeddings.
 
-The same embedding process is used for:
+The same embedding model is used for:
 
 * Document chunks
 * Student questions
 
-This allows the system to compare questions with stored document content.
+This allows the system to compare the semantic representation of a question with stored academic content.
 
 ---
 
-# FAISS Vector Store
+# FAISS Vector Search
 
 FAISS is used as the vector similarity search engine.
 
 FAISS stands for:
 
-> Facebook AI Similarity Search
+> **Facebook AI Similarity Search**
 
 The system stores document embeddings in a FAISS index.
 
@@ -675,7 +718,7 @@ Embedding Vector
 FAISS Index
 ```
 
-When the student asks a question:
+When a student asks a question:
 
 ```text
 Question
@@ -698,17 +741,11 @@ Top Relevant Chunks
 flowchart TD
 
     Q[Student Question]
-
     QE[Generate Query Embedding]
-
     INDEX[FAISS Index]
-
     SEARCH[Vector Similarity Search]
-
     RANK[Rank by Similarity Distance]
-
     FILTER[Apply Retrieval Filtering]
-
     RESULTS[Relevant Chunks]
 
     Q --> QE
@@ -772,9 +809,7 @@ Source References
 
 # Context Construction
 
-Retrieved chunks are not blindly concatenated.
-
-The context builder prepares retrieved information into a structured format.
+Retrieved chunks are prepared before being sent to the LLM.
 
 A simplified representation is:
 
@@ -792,14 +827,16 @@ Relevant lecture content...
 Relevant lecture content...
 ```
 
-The context builder is responsible for:
+The context-building layer is responsible for tasks such as:
 
 * Normalizing retrieved chunks
 * Removing duplicates
-* Organizing chunks
+* Organizing retrieved content
 * Preserving page information
 * Preserving document metadata
-* Creating a structured context for the LLM
+* Creating structured LLM context
+
+The exact implementation may vary depending on the current backend service logic.
 
 ---
 
@@ -808,21 +845,24 @@ The context builder is responsible for:
 The current LLM layer uses:
 
 ```text
+FastAPI
+   |
+   v
 Ollama
    |
    v
 Llama 3.2
 ```
 
-The LLM receives:
+The model receives two major inputs:
 
 ```text
 Student Question
-+
+        +
 Retrieved Lecture Context
 ```
 
-The goal is to generate an answer based on the retrieved material.
+The goal is to generate an answer based on the retrieved academic material.
 
 ---
 
@@ -830,9 +870,9 @@ The goal is to generate an answer based on the retrieved material.
 
 ProfessorMind AI follows a grounding principle:
 
-> If the uploaded notes do not provide enough information to answer the question, the system should not invent an answer from general model knowledge.
+> **If the uploaded notes do not provide enough information to answer a question, the system should avoid inventing an answer from unrelated model knowledge.**
 
-For unsupported questions, the system can return a response such as:
+For an unsupported question, the system can return a response similar to:
 
 ```text
 This question is outside the scope of the uploaded notes.
@@ -844,20 +884,9 @@ This behavior is important for academic reliability.
 
 # Source References
 
-Source information is generated from retrieval metadata rather than asking the LLM to invent page numbers.
+Source information should originate from retrieval metadata rather than being invented by the LLM.
 
-Example conceptual output:
-
-```text
-Sources
-
-DEEP LEARNING .pdf
-Page 38
-Page 39
-Page 81
-```
-
-The backend source structure can contain:
+A conceptual source object may look like:
 
 ```json
 {
@@ -869,7 +898,18 @@ The backend source structure can contain:
 }
 ```
 
-The exact source list depends on the retrieved chunks.
+A source list can contain:
+
+```text
+Sources
+
+DEEP LEARNING.pdf
+Page 38
+Page 39
+Page 81
+```
+
+The exact number of sources depends on the retrieved chunks.
 
 ---
 
@@ -882,6 +922,7 @@ Source references improve:
 * Debugging
 * User confidence
 * Retrieval evaluation
+* Answer verification
 
 They also allow developers to inspect whether the retrieved context actually corresponds to the generated answer.
 
@@ -891,31 +932,31 @@ They also allow developers to inspect whether the retrieved context actually cor
 
 Each notebook represents a separate academic knowledge space.
 
-For example:
+Example:
 
 ```text
 Notebook: Deep Learning
- |
- +-- Deep Learning.pdf
- +-- CNN Notes.pdf
- +-- RNN Notes.pdf
- +-- FAISS Index
+|
++-- Deep Learning.pdf
++-- CNN Notes.pdf
++-- RNN Notes.pdf
++-- Notebook FAISS Index
 ```
 
 Another notebook may contain:
 
 ```text
 Notebook: Machine Learning
- |
- +-- ML Notes.pdf
- +-- Regression.pdf
- +-- Classification.pdf
- +-- FAISS Index
+|
++-- ML Notes.pdf
++-- Regression.pdf
++-- Classification.pdf
++-- Notebook FAISS Index
 ```
 
 The retrieval process is scoped to the requested notebook.
 
-This prevents unrelated notebook documents from becoming retrieval context.
+This helps prevent unrelated notebook documents from becoming part of the retrieval context.
 
 ---
 
@@ -923,14 +964,14 @@ This prevents unrelated notebook documents from becoming retrieval context.
 
 ## Frontend
 
-| Technology         | Purpose                        |
-| ------------------ | ------------------------------ |
-| React              | User interface                 |
-| TypeScript         | Type-safe frontend development |
-| Vite               | Frontend build tool            |
-| React Router       | Client-side routing            |
-| Tailwind CSS / CSS | UI styling                     |
-| Lucide React       | Interface icons                |
+| Technology         | Purpose                             |
+| ------------------ | ----------------------------------- |
+| React              | User interface                      |
+| TypeScript         | Type-safe frontend development      |
+| Vite               | Frontend build and development tool |
+| React Router       | Client-side routing                 |
+| Tailwind CSS / CSS | UI styling                          |
+| Lucide React       | Interface icons                     |
 
 ---
 
@@ -951,7 +992,7 @@ This prevents unrelated notebook documents from becoming retrieval context.
 | Technology            | Purpose                  |
 | --------------------- | ------------------------ |
 | PyMuPDF               | PDF text extraction      |
-| Sentence Transformers | Text embeddings          |
+| Sentence Transformers | Semantic text embeddings |
 | FAISS                 | Vector similarity search |
 | Ollama                | Local LLM runtime        |
 | Llama 3.2             | Local language model     |
@@ -960,13 +1001,15 @@ This prevents unrelated notebook documents from becoming retrieval context.
 
 ## Database / Storage
 
-| Technology                       | Purpose               |
-| -------------------------------- | --------------------- |
-| SQLAlchemy                       | Database access layer |
-| PostgreSQL / configured database | Application metadata  |
-| FAISS                            | Vector index          |
-| Local storage                    | Uploaded PDF files    |
-| Pickle metadata                  | FAISS chunk metadata  |
+| Technology                       | Purpose                              |
+| -------------------------------- | ------------------------------------ |
+| SQLAlchemy                       | Database access layer                |
+| PostgreSQL / configured database | Application metadata                 |
+| FAISS                            | Vector index                         |
+| Local file storage               | Uploaded PDF files                   |
+| Metadata storage                 | Mapping chunks to source information |
+
+> The exact database backend depends on the current project configuration.
 
 ---
 
@@ -997,9 +1040,9 @@ flowchart TB
     end
 
     subgraph DATA[Data Layer]
-        DATABASE[(Database)]
+        DATABASE[(Application Database)]
         FAISS[(FAISS)]
-        METADATA[(Metadata)]
+        METADATA[(Chunk Metadata)]
         STORAGE[(PDF Storage)]
     end
 
@@ -1021,6 +1064,7 @@ flowchart TB
     UPLOAD_API --> STORAGE
 
     QUESTION_API --> RAG
+
     RAG --> RETRIEVAL
     RAG --> CONTEXT
     RAG --> LLM_SERVICE
@@ -1039,7 +1083,9 @@ flowchart TB
 
 # Backend Architecture
 
-The backend follows a service-oriented structure.
+The backend follows a modular service-oriented structure.
+
+A simplified conceptual structure is:
 
 ```text
 backend/
@@ -1065,34 +1111,37 @@ backend/
 └── main.py
 ```
 
+> This is a conceptual representation. Always treat the actual repository structure as the source of truth.
+
 ---
 
 # Backend Service Responsibilities
 
 ## Upload API
 
-Responsible for:
+The upload layer is responsible for operations such as:
 
 * Receiving PDF files
 * Validating uploaded files
 * Creating document records
-* Storing PDFs
+* Storing source PDFs
 * Extracting text
-* Chunking
-* Embedding
-* Updating FAISS
+* Chunking text
+* Generating embeddings
+* Updating the FAISS index
 * Updating document processing status
 
 ---
 
 ## Question API
 
-Responsible for:
+The question endpoint is responsible for:
 
-* Validating notebook existence
-* Receiving questions
+* Validating the notebook
+* Receiving the student's question
+* Validating request parameters
 * Calling the RAG service
-* Returning answers
+* Returning the generated answer
 * Returning source references
 * Handling API errors
 
@@ -1104,9 +1153,9 @@ The RAG service coordinates:
 
 ```text
 Retrieval
-+
+    +
 Context Construction
-+
+    +
 LLM Generation
 ```
 
@@ -1116,65 +1165,68 @@ It acts as the main orchestration layer for question answering.
 
 ## Retrieval Service
 
-Responsible for:
+The retrieval service is responsible for:
 
-* Loading the notebook FAISS index
+* Loading the relevant notebook FAISS index
 * Creating the question embedding
 * Running similarity search
-* Returning relevant chunks
+* Retrieving relevant chunks
+* Returning retrieval metadata
 
 ---
 
 ## Context Builder
 
-Responsible for:
+The context builder is responsible for:
 
 * Cleaning retrieved content
-* Removing duplicates
-* Ordering content
-* Grouping information
-* Building LLM context
+* Removing duplicates where appropriate
+* Organizing retrieved chunks
+* Preserving metadata
+* Building LLM-ready context
 
 ---
 
 ## Embedding Service
 
-Responsible for generating vector representations for:
+The embedding service is responsible for generating vector representations for:
 
 * Document chunks
 * User questions
+
+The same compatible embedding model should be used for both document and query embeddings.
 
 ---
 
 ## Vector Store Service
 
-Responsible for:
+The vector store layer can be responsible for:
 
 * Loading FAISS indexes
 * Searching FAISS
 * Saving indexes
 * Loading metadata
-* Validating vector/metadata alignment
+* Maintaining vector/metadata alignment
 
 ---
 
 ## LLM Service
 
-Responsible for:
+The LLM service is responsible for:
 
 * Connecting to Ollama
-* Selecting Llama 3.2
+* Selecting the configured Llama model
 * Constructing the grounded prompt
 * Generating the answer
-* Applying conservative output cleanup
+* Applying appropriate response handling
 
 ---
 
 # Frontend Architecture
 
-The frontend is built with React and Vite.
+The frontend is built with React, TypeScript, and Vite.
 
-Conceptual structure:
+Conceptually:
 
 ```text
 frontend/
@@ -1197,7 +1249,9 @@ frontend/
 
 # Frontend Responsibilities
 
-The frontend provides:
+The frontend provides the user-facing academic workspace.
+
+Major responsibilities include:
 
 * Dashboard
 * Notebook management
@@ -1205,16 +1259,16 @@ The frontend provides:
 * PDF upload
 * AI chat
 * Source reference display
-* Settings
 * Navigation
 * Loading states
 * Error states
+* API communication
 
 ---
 
 # Database Architecture
 
-The application database stores structured application information.
+The application database stores structured application-level information.
 
 Conceptually:
 
@@ -1242,19 +1296,19 @@ erDiagram
     }
 ```
 
-The database manages application-level metadata while FAISS manages vector similarity search.
+The database manages application metadata while FAISS handles vector similarity search.
 
 ---
 
 # Storage Architecture
 
-The system separates:
+The system separates different types of data:
 
 ```text
 Application Metadata
         |
         v
-Database
+Application Database
 
 Vector Data
         |
@@ -1264,7 +1318,7 @@ FAISS
 Source Documents
         |
         v
-File Storage
+Local File Storage
 
 Chunk Metadata
         |
@@ -1292,7 +1346,7 @@ Ask a question against a specific notebook.
 
 ---
 
-## Request
+## Request Example
 
 ```json
 {
@@ -1301,7 +1355,9 @@ Ask a question against a specific notebook.
 }
 ```
 
-Optional retrieval parameter:
+---
+
+## Request with `top_k`
 
 ```json
 {
@@ -1311,24 +1367,27 @@ Optional retrieval parameter:
 }
 ```
 
+> The exact accepted request fields and validation rules should always match the current backend implementation.
+
 ---
 
 # API Request Validation
 
-The question endpoint validates:
+The question endpoint should validate items such as:
 
 * Notebook ID
 * Question presence
 * Question length
-* `top_k` range
+* Retrieval parameters
+* Valid `top_k` range
 
-The current API limits `top_k` to a valid range rather than allowing arbitrary values.
+The purpose of validation is to prevent malformed requests from reaching the retrieval and generation layers.
 
 ---
 
 # API Response Structure
 
-A successful response follows this general structure:
+A successful response can follow a structure similar to:
 
 ```json
 {
@@ -1346,20 +1405,21 @@ A successful response follows this general structure:
 }
 ```
 
-The exact number of sources depends on retrieval results.
+The exact response structure depends on the current backend implementation.
 
 ---
 
 # HTTP Status Codes
 
-Typical responses include:
+Typical API responses may include:
 
-| Status | Meaning                                    |
-| ------ | ------------------------------------------ |
-| 200    | Successful question processing             |
-| 400    | Invalid request                            |
-| 404    | Notebook or required FAISS index not found |
-| 500    | Unexpected backend error                   |
+| Status | Meaning                  |
+| -----: | ------------------------ |
+|    200 | Successful request       |
+|    400 | Invalid request          |
+|    404 | Resource not found       |
+|    422 | Validation error         |
+|    500 | Unexpected backend error |
 
 ---
 
@@ -1367,34 +1427,55 @@ Typical responses include:
 
 ## Prerequisites
 
-Install the following:
+Before running the project, install the following:
 
 * Python 3.12
 * Node.js
 * npm
 * Git
 * Ollama
-* Llama 3.2
+
+The required Llama model should also be available locally.
 
 ---
 
 # Backend Setup
 
-Create and activate the Python environment.
+## 1. Open the Project Root
 
-Example for Windows PowerShell:
+```powershell
+cd "D:\Collage Project\ProfessorMindAI"
+```
+
+Replace the path if the project is stored elsewhere.
+
+---
+
+## 2. Create Virtual Environment
 
 ```powershell
 python -m venv .venv-clean
 ```
 
-Activate:
+---
+
+## 3. Activate Virtual Environment
+
+For Windows PowerShell:
 
 ```powershell
 .\.venv-clean\Scripts\Activate.ps1
 ```
 
-Install backend dependencies:
+After activation, the terminal should show the environment name, for example:
+
+```text
+(.venv-clean) PS D:\Collage Project\ProfessorMindAI>
+```
+
+---
+
+## 4. Install Backend Dependencies
 
 ```powershell
 pip install -r requirements.txt
@@ -1402,7 +1483,23 @@ pip install -r requirements.txt
 
 ---
 
+## 5. Verify Python
+
+```powershell
+python --version
+```
+
+Recommended project environment:
+
+```text
+Python 3.12.x
+```
+
+---
+
 # Frontend Setup
+
+Open another terminal.
 
 Move into the frontend directory:
 
@@ -1420,7 +1517,7 @@ npm install
 
 # Ollama Setup
 
-Install Ollama on the local machine.
+ProfessorMind AI uses Ollama for local LLM inference.
 
 Verify Ollama:
 
@@ -1434,7 +1531,7 @@ Check installed models:
 ollama list
 ```
 
-The project currently uses:
+The current project uses:
 
 ```text
 llama3.2
@@ -1458,9 +1555,22 @@ ollama run llama3.2
 
 The frontend and backend run independently.
 
+A typical local development setup uses:
+
+```text
+Frontend
+http://localhost:5173
+
+Backend
+http://127.0.0.1:8001
+
+Ollama
+Local Ollama service
+```
+
 ---
 
-## Start Backend
+# Start Backend
 
 From the project root:
 
@@ -1468,22 +1578,28 @@ From the project root:
 .\.venv-clean\Scripts\Activate.ps1
 ```
 
-Then:
+Then start FastAPI:
 
 ```powershell
 python -m uvicorn backend.main:app --host 127.0.0.1 --port 8001
 ```
 
-Backend:
+Backend address:
 
 ```text
 http://127.0.0.1:8001
 ```
 
-FastAPI documentation:
+FastAPI Swagger documentation:
 
 ```text
 http://127.0.0.1:8001/docs
+```
+
+FastAPI ReDoc:
+
+```text
+http://127.0.0.1:8001/redoc
 ```
 
 ---
@@ -1494,36 +1610,37 @@ Open another terminal:
 
 ```powershell
 cd frontend
+```
+
+Run:
+
+```powershell
 npm run dev
 ```
 
-Vite normally starts the frontend at:
+Vite normally starts at:
 
 ```text
 http://localhost:5173/
 ```
 
+The exact port can change if another service is already using the default Vite port.
+
 ---
 
 # Application Runtime
 
-The complete runtime can be visualized as:
+The local runtime can be visualized as:
 
 ```mermaid
 flowchart LR
 
     BROWSER[Browser]
-
     FRONTEND[React + Vite]
-
     BACKEND[FastAPI :8001]
-
     DATABASE[(Application Database)]
-
     FAISS[(FAISS Vector Store)]
-
-    OLLAMA[Ollama :11434]
-
+    OLLAMA[Ollama]
     LLAMA[Llama 3.2]
 
     BROWSER --> FRONTEND
@@ -1538,7 +1655,7 @@ flowchart LR
 
 # Project Directory Structure
 
-A simplified project structure:
+A simplified conceptual project structure is:
 
 ```text
 ProfessorMindAI/
@@ -1583,6 +1700,8 @@ ProfessorMindAI/
 └── README.md
 ```
 
+> The actual repository structure is the final authority. This section documents the intended architecture.
+
 ---
 
 # Data Flow
@@ -1601,7 +1720,7 @@ sequenceDiagram
     participant D as Database
 
     U->>F: Upload PDF
-    F->>A: POST PDF
+    F->>A: Send PDF
     A->>D: Create document record
     A->>P: Extract PDF text
     P-->>A: Page-level text
@@ -1610,7 +1729,7 @@ sequenceDiagram
     E-->>A: Embedding vectors
     A->>V: Store vectors
     A->>D: Update document metadata
-    A-->>F: Upload status
+    A-->>F: Processing status
     F-->>U: Document ready
 ```
 
@@ -1681,7 +1800,7 @@ The goal is to retrieve the most useful context for answering the question.
 
 # Retrieval Parameters
 
-The question API currently supports a `top_k` parameter.
+The question API can support a `top_k` retrieval parameter.
 
 Example:
 
@@ -1693,23 +1812,36 @@ Example:
 }
 ```
 
-`top_k` controls the number of candidate chunks considered by retrieval.
+Conceptually:
 
-A larger value can increase context coverage but may also introduce less relevant information.
+```text
+top_k = number of candidate chunks retrieved
+```
 
-A smaller value can produce more focused context but may miss useful supporting information.
+A larger value may:
 
-Therefore, retrieval parameters should be evaluated using actual document questions.
+* Increase context coverage
+* Include additional supporting information
+* Increase irrelevant context
+* Increase prompt size
+
+A smaller value may:
+
+* Produce more focused context
+* Reduce prompt size
+* Miss useful supporting information
+
+Therefore, retrieval parameters should be evaluated using actual academic questions.
 
 ---
 
 # Retrieval Evaluation
 
-Retrieval quality is evaluated separately from answer quality.
+Retrieval quality should be evaluated separately from answer quality.
 
-For example, a question may receive a correct answer even if the retrieval system returns some noisy chunks.
+A model may sometimes generate a plausible answer even when retrieval contains noise.
 
-Therefore evaluation should consider:
+Evaluation should therefore consider:
 
 1. Retrieved pages
 2. Retrieved chunk relevance
@@ -1717,6 +1849,8 @@ Therefore evaluation should consider:
 4. Answer correctness
 5. Unsupported claims
 6. Source references
+7. Notebook isolation
+8. Retrieval consistency
 
 ---
 
@@ -1729,7 +1863,7 @@ Q1:
 What are the three types of Gradient Descent mentioned in the notes?
 
 Q2:
-What does the notes say about Stochastic Gradient Descent?
+What do the notes say about Stochastic Gradient Descent?
 
 Q3:
 Explain the XOR problem and its solution using a Multi-Layer Perceptron, including the example for X1 = 0 and X2 = 0.
@@ -1741,7 +1875,7 @@ Q5:
 What is quantum computing?
 ```
 
-These questions test different retrieval behaviors.
+These questions can test different retrieval behaviors.
 
 ---
 
@@ -1749,7 +1883,7 @@ These questions test different retrieval behaviors.
 
 ## Supported Question
 
-The required information exists in the lecture material.
+The required information exists in the uploaded lecture material.
 
 Expected behavior:
 
@@ -1767,7 +1901,7 @@ Return sources
 
 ## Unsupported Question
 
-The required information does not exist in the uploaded notes.
+The required information does not exist in the uploaded material.
 
 Expected behavior:
 
@@ -1778,7 +1912,7 @@ No sufficiently relevant evidence
 Do not fabricate
         |
         v
-Return scope/refusal response
+Return scope / insufficient-context response
 ```
 
 ---
@@ -1787,28 +1921,67 @@ Return scope/refusal response
 
 Testing should be performed at multiple levels.
 
+Recommended levels include:
+
+```text
+Syntax
+  |
+  v
+Build
+  |
+  v
+API
+  |
+  v
+Document Processing
+  |
+  v
+Retrieval
+  |
+  v
+LLM Generation
+  |
+  v
+End-to-End Workflow
+```
+
 ---
 
-## Backend Syntax Validation
+# Backend Syntax Validation
 
-Python files can be compiled without running the complete application:
+Python files can be compiled without starting the complete application.
+
+Example:
 
 ```powershell
 python -m py_compile backend/services/vector_store.py backend/services/context_builder.py backend/services/rag_service.py backend/services/llm_service.py
 ```
 
+If the command completes without an error, the specified Python files passed basic syntax compilation.
+
 ---
 
-## Frontend Build
+# Frontend Build
+
+From the frontend directory:
 
 ```powershell
-cd frontend
 npm run build
 ```
 
+This validates the production frontend build.
+
 ---
 
-## Git Validation
+# Git Validation
+
+Check repository changes:
+
+```powershell
+git status
+```
+
+Check whitespace and patch formatting:
 
 ```powershell
 git diff --check
@@ -1818,82 +1991,99 @@ git diff --check
 
 # Functional Testing
 
-Important functional tests include:
-
-### Test 1 - PDF Upload
+## Test 1 — PDF Upload
 
 Verify:
 
 * PDF is accepted
 * Document record is created
 * Text is extracted
+* Pages are processed
 * Chunks are generated
 * Embeddings are generated
 * FAISS index is updated
-* Document status becomes completed
+* Metadata is stored
+* Document processing reaches the correct final status
 
 ---
 
-### Test 2 - Supported Question
+## Test 2 — Supported Question
 
 Ask a question clearly covered by the lecture notes.
 
 Verify:
 
-* HTTP 200
+* Successful API response
 * Correct answer
 * Relevant sources
 * Correct filename
 * Correct page references
+* Correct notebook scope
 
 ---
 
-### Test 3 - Unsupported Question
+## Test 3 — Unsupported Question
 
 Ask a question outside the uploaded notes.
 
 Verify:
 
-* System does not fabricate an academic answer
-* Response indicates insufficient scope
+* The system does not fabricate unsupported academic information
+* The response indicates insufficient scope or evidence
 * Sources are empty or appropriately absent
 
 ---
 
-### Test 4 - Notebook Isolation
+## Test 4 — Notebook Isolation
 
 Create two notebooks with different documents.
 
-Ask a question against Notebook A.
+Example:
 
-Verify that retrieval does not use Notebook B's documents.
+```text
+Notebook A
+  -> Deep Learning.pdf
+
+Notebook B
+  -> Database Systems.pdf
+```
+
+Ask a Deep Learning question against Notebook A.
+
+Verify that Notebook B's document is not included in retrieval.
 
 ---
 
-### Test 5 - Source Integrity
+## Test 5 — Source Integrity
 
-Verify that returned sources contain:
+Verify that returned sources contain metadata such as:
 
 ```text
 file_id
 filename
 page_number
+chunk_index
 ```
 
-and that these values originate from backend retrieval metadata.
+Verify that these values originate from backend retrieval metadata.
 
 ---
 
 # Failure Handling
 
-The backend handles common failures such as:
+The backend should handle common failures such as:
 
 * Missing notebook
 * Missing FAISS index
+* Missing metadata
 * Invalid request
 * Empty question
 * Invalid retrieval configuration
-* Unexpected processing errors
+* Invalid file
+* PDF processing failure
+* Embedding failure
+* LLM connection failure
+* Unexpected backend errors
 
 ---
 
@@ -1901,25 +2091,25 @@ The backend handles common failures such as:
 
 If document processing fails, the backend should:
 
-1. Mark document processing as failed.
+1. Mark the document as failed when supported.
 2. Log the error.
 3. Avoid returning a false success state.
-4. Clean up the stored source file when appropriate.
+4. Clean up temporary files when appropriate.
 5. Return an appropriate API error.
 
 ---
 
 # Retrieval Failure Handling
 
-If the required FAISS index or metadata is unavailable, the system should not silently produce a fabricated answer.
+If the required FAISS index or metadata is unavailable, the system should not silently generate a fabricated academic answer.
 
-The API can return a clear error indicating that documents need to be uploaded or indexed.
+The API should return a clear error or insufficient-context response depending on the failure type.
 
 ---
 
 # Vector / Metadata Integrity
 
-FAISS vector positions and metadata positions must remain aligned.
+FAISS vector positions and metadata positions must remain correctly aligned.
 
 Conceptually:
 
@@ -1939,13 +2129,21 @@ FAISS Position 2
 
 If these structures become misaligned, source references may point to incorrect documents or pages.
 
-The vector store therefore validates alignment before continuing operations where appropriate.
+Therefore, the vector store should maintain and validate the relationship between:
+
+```text
+Vector
+   <-> 
+Chunk
+   <->
+Source Metadata
+```
 
 ---
 
 # Security Considerations
 
-ProfessorMind AI is designed as an academic knowledge system, so security should be considered at multiple layers.
+ProfessorMind AI is an academic knowledge system, so security should be considered at multiple layers.
 
 Important considerations include:
 
@@ -1953,26 +2151,28 @@ Important considerations include:
 * Upload size limits
 * Input validation
 * Notebook-level isolation
-* Secure authentication in production
+* Authentication in production
 * Authorization checks
-* Safe file storage
-* Protection of environment variables
-* Avoiding secrets in source code
+* Secure file storage
+* Environment variable protection
+* Secret management
+* Avoiding credentials in source code
 * Avoiding unnecessary external data transmission
+* API rate limiting in production
 
 ---
 
 # Environment Variables
 
-Secrets and environment-specific values should not be committed to Git.
+Environment-specific configuration should not be committed to Git.
 
-For example:
+Example:
 
 ```text
 .env
 ```
 
-should be excluded through `.gitignore`.
+should normally be excluded through `.gitignore`.
 
 Never commit:
 
@@ -1984,13 +2184,25 @@ Private tokens
 Credentials
 ```
 
+A safe configuration approach is:
+
+```text
+Application
+    |
+    v
+Environment Variables
+    |
+    v
+Runtime Configuration
+```
+
 ---
 
 # Privacy
 
 The current architecture uses a local LLM through Ollama.
 
-The intended privacy model is:
+The intended local inference flow is:
 
 ```text
 Student Document
@@ -1999,7 +2211,7 @@ Student Document
 Local Backend
        |
        v
-Local FAISS
+Local Vector Store
        |
        v
 Local Ollama
@@ -2008,9 +2220,16 @@ Local Ollama
 Local Llama 3.2
 ```
 
-This reduces the need to send private academic documents to external LLM APIs.
+This reduces the need to send private academic document content to an external hosted LLM provider for generation.
 
-Production deployments would still require careful security and access-control design.
+However, privacy also depends on:
+
+* Where files are stored
+* Who can access the machine
+* Application authentication
+* API authorization
+* Database configuration
+* Production deployment architecture
 
 ---
 
@@ -2018,7 +2237,10 @@ Production deployments would still require careful security and access-control d
 
 ## Implemented
 
+The current project includes the following major capabilities:
+
 * React frontend
+* TypeScript frontend
 * Vite development environment
 * FastAPI backend
 * Notebook-based organization
@@ -2043,15 +2265,18 @@ Production deployments would still require careful security and access-control d
 
 ---
 
-# Currently PDF-Focused
+# Current Document Ingestion Scope
 
-The current document ingestion implementation primarily supports:
+The current ingestion pipeline is primarily PDF text-based:
 
 ```text
 PDF
  |
  v
 Text Extraction
+ |
+ v
+Page Metadata
  |
  v
 Chunking
@@ -2063,7 +2288,7 @@ Embedding
 FAISS
 ```
 
-The system is architected so additional modalities can be added later.
+The system is architected so additional document modalities can be introduced later.
 
 ---
 
@@ -2083,13 +2308,13 @@ Semantic similarity does not guarantee that every retrieved chunk is perfectly r
 
 A chunk may contain related terminology without directly answering the question.
 
-Therefore retrieval parameters require continuous evaluation.
+Therefore, retrieval parameters require evaluation and tuning.
 
 ---
 
 ## 3. Context Window
 
-The LLM has a finite context window.
+The LLM has a finite context capacity.
 
 Retrieving too many chunks can introduce:
 
@@ -2102,7 +2327,7 @@ Retrieving too many chunks can introduce:
 
 ## 4. Answer Quality Depends on Retrieval
 
-RAG quality can be represented conceptually as:
+RAG quality can be understood conceptually as:
 
 ```text
 Retrieval Quality
@@ -2120,9 +2345,17 @@ If retrieval fails, even a strong LLM may not produce the desired academic answe
 
 ---
 
-## 5. OCR Is Future Scope
+## 5. OCR
 
-OCR is not currently the primary implemented PDF ingestion path.
+OCR for scanned documents is future scope unless separately implemented.
+
+---
+
+## 6. Local Inference Hardware
+
+Local LLM inference depends on available CPU, RAM, GPU, and storage resources.
+
+Larger models may require significantly more resources.
 
 ---
 
@@ -2132,6 +2365,7 @@ Potential future improvements include:
 
 * OCR for scanned PDFs
 * PowerPoint ingestion
+* DOCX ingestion
 * Image understanding
 * Lecture audio processing
 * Video processing
@@ -2139,7 +2373,7 @@ Potential future improvements include:
 * Multimodal retrieval
 * Hybrid keyword + semantic search
 * Reranking
-* Better citation extraction
+* Improved citation extraction
 * Authentication
 * Role-based access control
 * Cloud deployment
@@ -2151,14 +2385,19 @@ Potential future improvements include:
 * Monitoring
 * Evaluation dashboards
 * Automated RAG benchmarks
+* Better retrieval evaluation
+* Conversation memory
+* Personalized learning workflows
 
 ---
 
 # Multimodal Expansion
 
-The project title includes multimodal learning assistance, but the current implementation is primarily PDF text-based.
+The project vision includes multimodal academic learning assistance.
 
-A future multimodal pipeline can be:
+However, the current implementation is primarily focused on PDF text processing.
+
+A future multimodal architecture could be:
 
 ```mermaid
 flowchart TD
@@ -2178,7 +2417,7 @@ flowchart TD
 
     CHUNK[Multimodal Chunking]
     EMBED[Multimodal Embeddings]
-    VECTOR[Vector Database]
+    VECTOR[Vector Store]
 
     QUERY[Student Question]
     RETRIEVE[Multimodal Retrieval]
@@ -2214,7 +2453,7 @@ flowchart TD
     LLM --> ANSWER
 ```
 
-This represents future architecture rather than the current implementation.
+This diagram represents **future architecture**, not the current implementation.
 
 ---
 
@@ -2232,10 +2471,13 @@ Embedding Generation
 FAISS Search
        |
        v
+Context Construction
+       |
+       v
 LLM Inference
 ```
 
-In many local RAG systems, LLM inference can become the largest latency component.
+In local RAG systems, LLM inference can become a major latency component.
 
 Performance can be improved through:
 
@@ -2247,7 +2489,9 @@ Performance can be improved through:
 * Prompt optimization
 * GPU acceleration
 * Caching
-* Background processing
+* Background document processing
+* Batch embedding
+* Better resource management
 
 ---
 
@@ -2257,13 +2501,13 @@ ProfessorMind AI follows several engineering principles.
 
 ## 1. Grounding First
 
-Answers should be based on retrieved academic evidence.
+Answers should be based on retrieved academic evidence whenever possible.
 
 ---
 
 ## 2. No Unnecessary Fabrication
 
-If the notes do not provide sufficient evidence, the system should not invent academic facts.
+If the uploaded material does not provide sufficient evidence, the system should avoid presenting unsupported information as if it came from the notes.
 
 ---
 
@@ -2281,7 +2525,7 @@ Knowledge belonging to one notebook should not unintentionally affect another no
 
 ## 5. Modular Architecture
 
-Services are separated according to responsibility.
+Services should be separated according to responsibility.
 
 ---
 
@@ -2293,26 +2537,28 @@ The current system uses local LLM inference through Ollama.
 
 ## 7. Future Extensibility
 
-The architecture should support future multimodal and production capabilities.
+The architecture should allow future multimodal and production capabilities.
 
 ---
 
 # Why RAG?
 
-A standard LLM has general pretrained knowledge.
+A standard LLM contains general pretrained knowledge.
 
 However, a student's lecture material may contain:
 
 * Professor-specific explanations
 * Custom examples
-* Specific terminology
+* Course-specific terminology
 * Course-specific definitions
 * Specific page references
 * Unique lecture content
+* Important formulas
+* Exam-oriented explanations
 
 RAG allows the system to retrieve this information before generating an answer.
 
-Therefore:
+Conceptually:
 
 ```text
 General LLM Knowledge
@@ -2327,7 +2573,7 @@ Grounded Academic Assistant
 
 # Why FAISS?
 
-FAISS is suitable for this project because it provides efficient vector similarity search.
+FAISS is suitable for the current project because it provides efficient vector similarity search.
 
 Advantages include:
 
@@ -2335,8 +2581,9 @@ Advantages include:
 * Local execution
 * Open-source ecosystem
 * Python integration
-* Suitable for semantic retrieval
+* Semantic retrieval support
 * No mandatory external vector database
+* Suitable for local experimentation
 
 For the current project scale, FAISS provides a practical local vector search layer.
 
@@ -2347,12 +2594,12 @@ For the current project scale, FAISS provides a practical local vector search la
 Using a local LLM provides several benefits:
 
 * Reduced dependence on external APIs
-* Better privacy control
+* Better local privacy control
 * Offline/local experimentation
 * No per-request cloud inference cost
 * Easier academic experimentation
 
-The trade-off is that local inference depends on available hardware.
+The main trade-off is that local inference depends on available hardware.
 
 ---
 
@@ -2360,7 +2607,7 @@ The trade-off is that local inference depends on available hardware.
 
 Ollama provides a convenient runtime for local language models.
 
-The application can communicate with Ollama through its local API.
+The application can communicate with Ollama through its local service/API.
 
 Architecture:
 
@@ -2380,9 +2627,9 @@ This keeps the LLM integration relatively simple and modular.
 
 # Why Sentence Transformers?
 
-Sentence Transformers are designed to produce semantic embeddings.
+Sentence Transformers provide models for converting text into semantic vector representations.
 
-They are useful because:
+They are useful for semantic retrieval because:
 
 ```text
 Question
@@ -2403,61 +2650,73 @@ This is more appropriate for semantic retrieval than relying only on exact strin
 
 # Advantages
 
-ProfessorMind AI provides several advantages.
+## Academic Focus
 
-### Academic Focus
+The system is designed specifically around academic lecture knowledge.
 
-The system is specifically designed around lecture knowledge.
+## Private Knowledge Retrieval
 
-### Private Knowledge Retrieval
+Students can query their own uploaded documents.
 
-Students can query their own documents.
-
-### Semantic Search
+## Semantic Search
 
 Conceptual similarity can be used instead of only keyword matching.
 
-### Local AI
+## Local AI
 
-The current LLM inference is local.
+The current LLM inference runs locally through Ollama.
 
-### Source References
+## Source References
 
-Retrieved pages and document metadata improve traceability.
+Retrieved page and document metadata improve traceability.
 
-### Modular Architecture
+## Modular Architecture
 
 The system can evolve into a larger multimodal platform.
+
+## Extensibility
+
+Future capabilities can be added without redesigning the entire application.
 
 ---
 
 # Challenges
 
-Important engineering challenges include:
-
 ## Retrieval Accuracy
 
-Finding the right chunks is one of the most important RAG problems.
+Finding the correct chunks is one of the most important RAG challenges.
+
+---
 
 ## Chunking
 
-Chunks must contain enough information without becoming excessively large.
+Chunks must contain enough information without becoming unnecessarily large.
+
+---
 
 ## Context Noise
 
 Retrieving too much information can reduce answer quality.
 
+---
+
 ## Hallucination Control
 
-The model must remain grounded in retrieved content.
+The model should remain grounded in the retrieved context.
+
+---
 
 ## Source Integrity
 
-Metadata must remain correctly aligned with vectors.
+Metadata must remain correctly aligned with vector positions.
+
+---
 
 ## Local Inference
 
-LLM performance depends on available CPU/GPU resources.
+LLM performance depends on available hardware.
+
+---
 
 ## Document Diversity
 
@@ -2478,12 +2737,14 @@ ProfessorMind AI can be used for:
 * Academic document exploration
 * Assignment preparation
 * Research material exploration
+* Revision assistance
+* Topic discovery
 
 ---
 
 # Academic Value
 
-The project demonstrates the integration of several modern AI and software engineering concepts:
+The project demonstrates the integration of several modern AI concepts:
 
 ```text
 Artificial Intelligence
@@ -2501,13 +2762,15 @@ Artificial Intelligence
         +-- Local AI
 ```
 
-It also combines these concepts with:
+It also combines these concepts with software engineering:
 
 ```text
 Software Engineering
         |
         +-- React
+        +-- TypeScript
         +-- FastAPI
+        +-- Python
         +-- REST APIs
         +-- Databases
         +-- File Storage
@@ -2518,7 +2781,7 @@ Software Engineering
 
 # Engineering Value
 
-The project is not simply an LLM chatbot.
+ProfessorMind AI is not simply an LLM chatbot.
 
 It demonstrates a complete AI application pipeline:
 
@@ -2535,7 +2798,7 @@ Document Processing
 Embeddings
    |
    v
-Vector Database
+Vector Search
    |
    v
 Retrieval
@@ -2548,6 +2811,25 @@ Local LLM
    |
    v
 Grounded Response
+   |
+   v
+Source References
+```
+
+The project therefore combines:
+
+```text
+Full-Stack Development
+        +
+AI Engineering
+        +
+RAG
+        +
+Vector Search
+        +
+Local LLM
+        +
+Document Processing
 ```
 
 ---
@@ -2558,13 +2840,13 @@ Grounded Response
 
 ProfessorMind AI is a professor-centric academic learning assistant based on Retrieval-Augmented Generation.
 
-Students upload lecture PDFs into notebooks. The system extracts the PDF text using PyMuPDF, divides the text into chunks, converts the chunks into embeddings using Sentence Transformers, and stores them in FAISS.
+Students upload lecture PDFs into notebooks. The system extracts PDF text using PyMuPDF, divides the text into chunks, converts the chunks into embeddings using Sentence Transformers, and stores them in FAISS.
 
 When a student asks a question, the question is converted into an embedding and searched against the relevant notebook's FAISS index.
 
 The most relevant chunks are passed to a local Llama 3.2 model running through Ollama.
 
-The model generates a grounded answer using the retrieved lecture material, and the system also returns source metadata such as the document name and page number.
+The model generates a grounded answer using the retrieved lecture material, while the system also returns source metadata such as the document name and page number.
 
 ---
 
@@ -2572,21 +2854,25 @@ The model generates a grounded answer using the retrieved lecture material, and 
 
 ProfessorMind AI follows a Retrieval-Augmented Generation architecture.
 
-During document ingestion, a PDF is uploaded through the React frontend and sent to a FastAPI backend.
+During document ingestion, a PDF is uploaded through the React frontend and sent to the FastAPI backend.
 
-The backend extracts page-level text using PyMuPDF. The extracted content is split into chunks and converted into numerical embeddings using a Sentence Transformer model.
+The backend extracts page-level text using PyMuPDF.
+
+The extracted content is split into chunks and converted into numerical embeddings using a Sentence Transformer model.
 
 These embeddings are stored in a notebook-specific FAISS vector index, while document and chunk metadata are stored separately.
 
-When the user asks a question, the question is embedded using the same embedding model. FAISS performs similarity search to identify relevant lecture chunks.
+When the user asks a question, the question is embedded using the same embedding model.
 
-The retrieved chunks are passed through a context builder, which organizes and deduplicates the retrieved information.
+FAISS performs similarity search to identify relevant lecture chunks.
+
+The retrieved chunks are passed through a context builder, which organizes the retrieved information.
 
 The resulting context is provided to a locally running Llama 3.2 model through Ollama.
 
 The model generates an answer based on the retrieved context.
 
-Source metadata is returned separately so that the system can display the relevant document and page references.
+Source metadata is returned separately so that the frontend can display the relevant document and page references.
 
 ---
 
@@ -2608,13 +2894,13 @@ RAG allows the system to answer using private academic documents instead of rely
 
 ## Q3. What is FAISS?
 
-FAISS is a library for efficient similarity search over vector embeddings.
+FAISS is a library designed for efficient similarity search over vector representations.
 
 ---
 
 ## Q4. What is an embedding?
 
-An embedding is a numerical vector representation of text that captures semantic relationships.
+An embedding is a numerical vector representation of information that captures semantic relationships.
 
 ---
 
@@ -2626,13 +2912,13 @@ Embeddings allow the system to compare the semantic meaning of a question with t
 
 ## Q6. Why use Sentence Transformers?
 
-Sentence Transformers provide models for converting text into semantic vector representations suitable for similarity search.
+Sentence Transformers provide models that can convert text into semantic vector representations suitable for similarity search.
 
 ---
 
 ## Q7. Why use Llama 3.2?
 
-Llama 3.2 provides the language-generation capability required to transform retrieved lecture context into a natural-language answer.
+Llama 3.2 provides the language-generation capability required to transform retrieved academic context into a natural-language answer.
 
 ---
 
@@ -2644,7 +2930,7 @@ Ollama provides a convenient local runtime for running language models.
 
 ## Q9. Why not directly ask the LLM?
 
-A direct LLM request may rely on pretrained knowledge and can hallucinate information.
+A direct LLM request may rely heavily on pretrained knowledge and may produce unsupported information.
 
 RAG first retrieves relevant academic evidence.
 
@@ -2652,7 +2938,7 @@ RAG first retrieves relevant academic evidence.
 
 ## Q10. What happens if the answer is not present in the notes?
 
-The system is designed to avoid fabricating unsupported academic information and can return an out-of-scope response.
+The system is designed to avoid presenting unsupported information as if it came from the uploaded academic material and can return an insufficient-context or out-of-scope response.
 
 ---
 
@@ -2682,7 +2968,37 @@ FastAPI provides the backend REST API connecting the frontend with document proc
 
 ## Q15. What is the role of React?
 
-React provides the interactive user interface through which students upload documents and ask questions.
+React provides the interactive user interface through which students manage notebooks, upload documents, and ask questions.
+
+---
+
+## Q16. Why preserve page numbers?
+
+Page numbers make retrieved information traceable back to the original lecture material.
+
+---
+
+## Q17. What is the role of FAISS metadata?
+
+Metadata connects a retrieved vector position back to the original document, page, chunk, and text.
+
+---
+
+## Q18. What happens during PDF upload?
+
+The system validates the PDF, stores it, extracts text, creates chunks, generates embeddings, updates the vector index, and stores relevant metadata.
+
+---
+
+## Q19. What is hallucination?
+
+Hallucination occurs when an AI model generates information that is unsupported, incorrect, or not grounded in the available evidence.
+
+---
+
+## Q20. How does your project reduce hallucination?
+
+The project uses retrieval first and provides retrieved academic context to the LLM. It also uses a grounding-oriented prompt and can reject unsupported questions.
 
 ---
 
@@ -2722,6 +3038,23 @@ npm run build
 
 ---
 
+## Install Frontend Dependencies
+
+```powershell
+cd frontend
+npm install
+```
+
+---
+
+## Install Backend Dependencies
+
+```powershell
+pip install -r requirements.txt
+```
+
+---
+
 ## Validate Python Files
 
 ```powershell
@@ -2730,7 +3063,7 @@ python -m py_compile backend/services/vector_store.py backend/services/context_b
 
 ---
 
-## Check Git Changes
+## Check Git Status
 
 ```powershell
 git status
@@ -2738,7 +3071,7 @@ git status
 
 ---
 
-## Check Formatting Errors
+## Check Git Formatting Errors
 
 ```powershell
 git diff --check
@@ -2750,6 +3083,14 @@ git diff --check
 
 ```powershell
 ollama list
+```
+
+---
+
+## Pull Llama 3.2
+
+```powershell
+ollama pull llama3.2
 ```
 
 ---
@@ -2770,21 +3111,13 @@ Recommended development workflow:
 flowchart TD
 
     IDEA[Feature / Bug]
-
     INSPECT[Inspect Existing Code]
-
     CHANGE[Make Minimal Change]
-
     STATIC[Static Validation]
-
     BUILD[Build / Compile]
-
     RUN[Run Application]
-
     TEST[Test Real Workflow]
-
     REVIEW[Review Logs and Output]
-
     COMMIT[Git Commit]
 
     IDEA --> INSPECT
@@ -2796,6 +3129,18 @@ flowchart TD
     TEST --> REVIEW
     REVIEW --> COMMIT
 ```
+
+The preferred development approach is:
+
+1. Understand the existing implementation.
+2. Identify the exact failure or requirement.
+3. Make the smallest appropriate change.
+4. Validate syntax.
+5. Build the application.
+6. Run the affected workflow.
+7. Test the real user flow.
+8. Review logs and output.
+9. Commit only verified changes.
 
 ---
 
@@ -2809,7 +3154,7 @@ Check Python:
 python --version
 ```
 
-Check the environment:
+Activate the environment:
 
 ```powershell
 .\.venv-clean\Scripts\Activate.ps1
@@ -2821,23 +3166,25 @@ Then:
 python -m uvicorn backend.main:app --host 127.0.0.1 --port 8001
 ```
 
+If the backend still fails, inspect the first meaningful traceback/error rather than only the final line.
+
 ---
 
 # Ollama Is Not Responding
 
-Check:
+Check Ollama:
 
 ```powershell
 ollama list
 ```
 
-Then:
+Check the model:
 
 ```powershell
 ollama run llama3.2
 ```
 
-Verify that the Ollama service is running locally.
+Make sure the Ollama service is running locally.
 
 ---
 
@@ -2851,6 +3198,8 @@ npm install
 npm run dev
 ```
 
+If the frontend reports dependency errors, inspect the first package or TypeScript error.
+
 ---
 
 # Frontend Build Fails
@@ -2858,6 +3207,7 @@ npm run dev
 Run:
 
 ```powershell
+cd frontend
 npm run build
 ```
 
@@ -2871,45 +3221,53 @@ Check:
 
 1. Whether the correct notebook is being queried.
 2. Whether the PDF was successfully processed.
-3. Whether FAISS contains vectors.
-4. Whether metadata is aligned with vectors.
-5. Whether retrieved chunks are relevant.
-6. Whether `top_k` is appropriate.
-7. Whether the context builder is introducing unnecessary content.
-8. Whether the LLM prompt is grounded.
-9. Whether the question is actually covered by the document.
+3. Whether chunks were generated.
+4. Whether embeddings were generated.
+5. Whether FAISS contains vectors.
+6. Whether metadata is aligned with vectors.
+7. Whether retrieved chunks are relevant.
+8. Whether `top_k` is appropriate.
+9. Whether context construction introduces unnecessary content.
+10. Whether the LLM prompt is grounded.
+11. Whether the question is actually covered by the document.
 
 ---
 
 # RAG Debugging Strategy
 
-When an answer is wrong, do not immediately change the LLM prompt.
+When an answer is incorrect, do not immediately change the LLM prompt.
 
 Debug in this order:
 
 ```text
-1. Question
-      |
-      v
+1. User Question
+       |
+       v
 2. Query Embedding
-      |
-      v
-3. Retrieved Chunks
-      |
-      v
-4. Similarity Distances
-      |
-      v
-5. Context
-      |
-      v
-6. LLM Prompt
-      |
-      v
-7. Generated Answer
+       |
+       v
+3. FAISS Retrieval
+       |
+       v
+4. Retrieved Chunks
+       |
+       v
+5. Similarity / Distance
+       |
+       v
+6. Context
+       |
+       v
+7. LLM Prompt
+       |
+       v
+8. Generated Answer
+       |
+       v
+9. Source References
 ```
 
-This makes it easier to identify the actual failure layer.
+This helps identify the actual failure layer.
 
 ---
 
@@ -2924,8 +3282,10 @@ Important considerations include:
 * Retrieval quality should be evaluated.
 * Source references should remain traceable.
 * User documents should be protected.
-* Production deployments should implement authentication and authorization.
+* Production deployments should implement authentication.
+* Production deployments should implement authorization.
 * Sensitive academic documents should not be exposed unnecessarily.
+* AI-generated answers should not automatically be treated as academically authoritative.
 
 ---
 
@@ -2937,37 +3297,24 @@ A production-scale version could evolve toward:
 flowchart TB
 
     USER[Student]
-
     WEB[React Web Application]
-
-    API[API Gateway / FastAPI]
-
+    API[FastAPI API]
     AUTH[Authentication + Authorization]
-
     CACHE[Redis]
-
     QUEUE[Background Job Queue]
-
     PROCESSOR[Document Processing Workers]
-
     EMBEDDING[Embedding Service]
-
     VECTOR[(Production Vector Database)]
-
     DB[(PostgreSQL)]
-
     OBJECT[(Object Storage)]
-
     RERANK[Reranking Service]
-
     CONTEXT[Context Builder]
-
     LLM[LLM Service]
-
     MONITOR[Monitoring + Logging]
 
     USER --> WEB
     WEB --> API
+
     API --> AUTH
     AUTH --> DB
 
@@ -2975,10 +3322,12 @@ flowchart TB
     API --> QUEUE
 
     QUEUE --> PROCESSOR
+
     PROCESSOR --> OBJECT
     PROCESSOR --> EMBEDDING
-    EMBEDDING --> VECTOR
     PROCESSOR --> DB
+
+    EMBEDDING --> VECTOR
 
     API --> VECTOR
     VECTOR --> RERANK
@@ -2990,7 +3339,7 @@ flowchart TB
     LLM --> MONITOR
 ```
 
-This is future architecture and is not the current deployment architecture.
+This is future architecture and is **not the current local deployment architecture**.
 
 ---
 
@@ -3016,7 +3365,7 @@ Uploaded documents can eventually be moved from local storage to secure object s
 
 ## Background Processing
 
-Large documents should be processed asynchronously.
+Large documents should be processed asynchronously so that the API remains responsive.
 
 ---
 
@@ -3025,9 +3374,10 @@ Large documents should be processed asynchronously.
 Redis can be introduced for:
 
 * Caching
-* Session data
 * Rate limiting
 * Temporary state
+* Session-related data
+* Frequently requested results
 
 ---
 
@@ -3047,6 +3397,9 @@ Reranker
 Best Chunks
     |
     v
+Context Builder
+    |
+    v
 LLM
 ```
 
@@ -3062,19 +3415,14 @@ flowchart LR
     QUESTION[Question]
 
     SEMANTIC[Semantic Retrieval]
-
     KEYWORD[Keyword Retrieval]
 
     HYBRID[Hybrid Retrieval]
-
     RERANK[Reranking]
-
     FILTER[Relevance Filtering]
-
     CONTEXT[Context Construction]
 
     LLM[Llama / Production LLM]
-
     ANSWER[Answer]
 
     QUESTION --> SEMANTIC
@@ -3090,7 +3438,7 @@ flowchart LR
     LLM --> ANSWER
 ```
 
-This can improve retrieval precision for academic queries containing important terminology.
+Hybrid retrieval can be particularly useful for academic queries containing exact technical terminology.
 
 ---
 
@@ -3100,21 +3448,27 @@ The project emphasizes:
 
 ```text
 Correctness
-   +
+     +
 Traceability
-   +
+     +
 Modularity
-   +
+     +
 Privacy
-   +
+     +
 Maintainability
-   +
+     +
 Extensibility
 ```
 
 A feature should not only work.
 
-It should also be understandable, testable, and maintainable.
+It should also be:
+
+* Understandable
+* Testable
+* Maintainable
+* Debuggable
+* Extendable
 
 ---
 
@@ -3122,32 +3476,39 @@ It should also be understandable, testable, and maintainable.
 
 ## Current Status
 
-```text
-Frontend              : Implemented
-FastAPI Backend       : Implemented
-PDF Upload            : Implemented
-PDF Text Extraction   : Implemented
-Chunking              : Implemented
-Embeddings            : Implemented
-FAISS Retrieval       : Implemented
-RAG Pipeline          : Implemented
-Local LLM             : Implemented
-Ollama Integration    : Implemented
-Source References     : Implemented
-Notebook Isolation    : Implemented
-Multimodal Ingestion  : Future Scope
-OCR                   : Future Scope
-PPT Processing        : Future Scope
-Audio/Video           : Future Scope
-Production Auth       : Future Scope
-Cloud Deployment      : Future Scope
-```
+| Component                 | Status       |
+| ------------------------- | ------------ |
+| React Frontend            | Implemented  |
+| TypeScript                | Implemented  |
+| Vite                      | Implemented  |
+| FastAPI Backend           | Implemented  |
+| PDF Upload                | Implemented  |
+| PDF Text Extraction       | Implemented  |
+| Page Metadata             | Implemented  |
+| Text Chunking             | Implemented  |
+| Embeddings                | Implemented  |
+| FAISS Retrieval           | Implemented  |
+| RAG Pipeline              | Implemented  |
+| Context Construction      | Implemented  |
+| Ollama Integration        | Implemented  |
+| Llama 3.2                 | Implemented  |
+| Grounded Answering        | Implemented  |
+| Source References         | Implemented  |
+| Notebook Isolation        | Implemented  |
+| Multimodal Ingestion      | Future Scope |
+| OCR                       | Future Scope |
+| PPT Processing            | Future Scope |
+| Audio / Video             | Future Scope |
+| Production Authentication | Future Scope |
+| Cloud Deployment          | Future Scope |
+| Advanced Reranking        | Future Scope |
+| Hybrid Search             | Future Scope |
 
 ---
 
 # Project Vision
 
-The long-term vision of ProfessorMind AI is to evolve from a PDF-based academic chatbot into a complete private multimodal learning environment.
+The long-term vision of ProfessorMind AI is to evolve from a PDF-focused academic assistant into a complete private multimodal learning environment.
 
 The future system could understand:
 
@@ -3168,17 +3529,17 @@ and provide:
 
 ```text
 Search
-+
+    +
 Question Answering
-+
+    +
 Summarization
-+
+    +
 Source Retrieval
-+
+    +
 Concept Explanation
-+
+    +
 Revision Assistance
-+
+    +
 Multimodal Knowledge Retrieval
 ```
 
@@ -3201,21 +3562,13 @@ flowchart TB
     end
 
     INGEST[Multimodal Ingestion]
-
     EMBED[Embedding Layer]
-
     VECTOR[Knowledge Vector Store]
-
     RETRIEVE[Semantic + Hybrid Retrieval]
-
     RERANK[Reranking]
-
     CONTEXT[Grounded Context]
-
     AI[AI Reasoning Layer]
-
     ANSWER[Academic Answer]
-
     SOURCES[Source References]
 
     STUDENT --> KNOWLEDGE
@@ -3225,14 +3578,19 @@ flowchart TB
 
     STUDENT --> RETRIEVE
     VECTOR --> RETRIEVE
+
     RETRIEVE --> RERANK
     RERANK --> CONTEXT
     CONTEXT --> AI
+
     AI --> ANSWER
     RERANK --> SOURCES
+
     ANSWER --> STUDENT
     SOURCES --> STUDENT
 ```
+
+> **Important:** The above represents the long-term vision. The current implementation is primarily PDF text ingestion + semantic retrieval + RAG + local Llama 3.2 inference.
 
 ---
 
@@ -3240,29 +3598,31 @@ flowchart TB
 
 ProfessorMind AI demonstrates how modern AI techniques can be combined with full-stack software engineering to create a private academic knowledge assistant.
 
-The system combines:
+The current system combines:
 
 ```text
 React
-+
+   +
 TypeScript
-+
+   +
+Vite
+   +
 FastAPI
-+
+   +
 Python
-+
+   +
 PyMuPDF
-+
+   +
 Sentence Transformers
-+
+   +
 FAISS
-+
+   +
 Ollama
-+
+   +
 Llama 3.2
-+
+   +
 Database
-+
+   +
 RAG
 ```
 
@@ -3270,7 +3630,21 @@ The core architecture is intentionally modular.
 
 The current implementation focuses on reliable PDF-based knowledge retrieval and grounded question answering.
 
-The architecture also provides a foundation for future improvements such as OCR, multimodal document understanding, hybrid retrieval, reranking, authentication, cloud deployment, and production-scale AI infrastructure.
+The architecture also provides a foundation for future improvements such as:
+
+* OCR
+* Multimodal document understanding
+* PowerPoint processing
+* Image understanding
+* Audio/video processing
+* Hybrid retrieval
+* Reranking
+* Better source citation
+* Authentication
+* Authorization
+* Cloud deployment
+* Background processing
+* Production-scale AI infrastructure
 
 The central idea remains simple:
 
@@ -3280,7 +3654,7 @@ The central idea remains simple:
 
 # ProfessorMind AI
 
-### Private Academic Knowledge. Intelligent Retrieval. Grounded Answers.
+## Private Academic Knowledge. Intelligent Retrieval. Grounded Answers.
 
 ```text
 PDF
@@ -3315,5 +3689,127 @@ Sources
 
 ---
 
+## Project Summary
+
+```text
+Project Name
+ProfessorMind AI
+
+Project Type
+Professor-Centric AI Learning Assistant
+
+Primary Architecture
+Retrieval-Augmented Generation (RAG)
+
+Current Knowledge Source
+Uploaded Academic PDFs
+
+Document Processing
+PyMuPDF
+
+Embedding Layer
+Sentence Transformers
+
+Vector Search
+FAISS
+
+Backend
+Python + FastAPI
+
+Frontend
+React + TypeScript + Vite
+
+Local LLM Runtime
+Ollama
+
+Language Model
+Llama 3.2
+
+Application Database
+Configured Database / SQLAlchemy
+
+Primary Retrieval Scope
+Notebook-specific academic knowledge
+
+Current Focus
+PDF-based private lecture knowledge retrieval
+
+Future Direction
+Multimodal academic learning assistant
 ```
+
+---
+
+## Final Architecture Summary
+
+```text
+                    ┌───────────────────────┐
+                    │       Student         │
+                    └───────────┬───────────┘
+                                │
+                                v
+                    ┌───────────────────────┐
+                    │ React + TypeScript    │
+                    │       Frontend        │
+                    └───────────┬───────────┘
+                                │
+                                v
+                    ┌───────────────────────┐
+                    │ FastAPI Backend       │
+                    │       :8001           │
+                    └───────────┬───────────┘
+                                │
+              ┌─────────────────┴─────────────────┐
+              │                                   │
+              v                                   v
+    ┌───────────────────┐              ┌───────────────────┐
+    │ Document Pipeline  │              │   Question/RAG    │
+    └─────────┬─────────┘              └─────────┬─────────┘
+              │                                  │
+              v                                  v
+        ┌───────────┐                    ┌──────────────┐
+        │ PyMuPDF   │                    │   Retrieval  │
+        └─────┬─────┘                    └──────┬───────┘
+              │                                  │
+              v                                  v
+        ┌───────────┐                    ┌──────────────┐
+        │ Chunking  │                    │    FAISS     │
+        └─────┬─────┘                    └──────┬───────┘
+              │                                  │
+              v                                  v
+        ┌───────────────┐               ┌──────────────┐
+        │  Embeddings   │               │   Relevant   │
+        │  Sentence     │               │    Chunks    │
+        │  Transformers │               └──────┬───────┘
+        └───────┬───────┘                      │
+                │                              v
+                v                       ┌──────────────┐
+          ┌───────────┐                  │Context Build │
+          │   FAISS   │                  └──────┬───────┘
+          └───────────┘                         │
+                                                v
+                                         ┌──────────────┐
+                                         │    Ollama    │
+                                         └──────┬───────┘
+                                                │
+                                                v
+                                         ┌──────────────┐
+                                         │  Llama 3.2   │
+                                         └──────┬───────┘
+                                                │
+                                                v
+                                         ┌──────────────┐
+                                         │    Grounded  │
+                                         │    Answer    │
+                                         └──────┬───────┘
+                                                │
+                                                v
+                                         ┌──────────────┐
+                                         │    Sources   │
+                                         │ Page + File  │
+                                         └──────────────┘
 ```
+
+---
+
+> **ProfessorMind AI — From Private Lecture Material to Grounded Academic Answers.**
